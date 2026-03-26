@@ -10,7 +10,7 @@ SYNC_SCRIPT="$REPO_ROOT/.ai/shared/scripts/sync-ai-skills.sh"
 AGENTS_DIR="$REPO_ROOT/.agents/skills"
 REPO_NAME="$(basename "$REPO_ROOT" | tr '[:upper:]' '[:lower:]')"
 
-if [[ -v CODEX_SKILL_PREFIX ]]; then
+if [[ "${CODEX_SKILL_PREFIX+x}" == "x" ]]; then
   SKILL_PREFIX="$CODEX_SKILL_PREFIX"
 else
   SKILL_PREFIX="$REPO_NAME-"
