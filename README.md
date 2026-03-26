@@ -10,6 +10,7 @@ skills/
   <skill-name>/
     SKILL.md            # shared Codex skill source of truth
 scripts/sync-ai-skills.sh
+scripts/link-codex-skills.sh
 ```
 
 Recommended shared planning conventions for consumer repos:
@@ -63,6 +64,17 @@ Or add a thin wrapper script in the consumer repo:
 set -euo pipefail
 bash .ai/shared/scripts/sync-ai-skills.sh .
 ```
+
+To link generated agent skills into Codex's global skill directory:
+
+```bash
+bash .ai/shared/scripts/link-codex-skills.sh .
+```
+
+By default this installs namespaced links like `stella-open-pr`
+into `${CODEX_HOME:-$HOME/.codex}/skills` to avoid cross-repo
+collisions. Set `CODEX_SKILL_PREFIX=""` if you explicitly want
+unprefixed global names.
 
 ## Current Shared Commands
 
