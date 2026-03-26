@@ -1,0 +1,40 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+REPO_ROOT="${1:-.}"
+REPO_ROOT="$(cd "$REPO_ROOT" && pwd)"
+
+SHARED_ROOT="$REPO_ROOT/.ai/shared"
+SHARED_SKILLS_DIR="$SHARED_ROOT/skills"
+LOCAL_SKILLS_DIR="$REPO_ROOT/.ai/local-skills"
+
+CLAUDE_DIR="$REPO_ROOT/.claude/commands"
+AGENTS_DIR="$REPO_ROOT/.agents/skills"
+
+copy_flat() {
+  local source_dir="$1"
+  local target_dir="$2"
+
+  [ -d "$source_dir" ] || return 0
+
+  find "$source_dir" -maxdepth 1 -type f | while read -r file; do
+    cp "$file" "$target_dir/$(basename "$file")"
+  done
+}
+
+rebuild_target() {
+  local target_dir="$1"
+
+  rm -rf "$target_dir"
+  mkdir -p "$target_dir"
+
+  copy_flat "$SHARED_SKILLS_DIR" "$target_dir"
+  copy_flat "$LOCAL_SKILLS_DIR" "$target_dir"
+}
+
+rebuild_target "$CLAUDE_DIR"
+rebuild_target "$AGENTS_DIR"
+
+echo "Synced AI skills into:"
+echo "  $CLAUDE_DIR"
+echo "  $AGENTS_DIR"
