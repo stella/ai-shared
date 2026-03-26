@@ -6,7 +6,9 @@ repositories.
 ## Layout
 
 ```text
-skills/                  # shared flat source of truth
+skills/
+  <skill-name>/
+    SKILL.md            # shared Codex skill source of truth
 scripts/sync-ai-skills.sh
 ```
 
@@ -23,9 +25,9 @@ Consumer repositories are expected to use:
 
 ```text
 .ai/shared/              # submodule pointing here
-.ai/local-skills/        # repo-local flat skills
+.ai/local-skills/        # repo-local Codex-style skills
 .claude/commands/        # generated flat output
-.agents/skills/          # generated flat output
+.agents/skills/          # generated Codex-style skills
 ```
 
 ## Sync behavior
@@ -37,10 +39,10 @@ The sync script overlays:
 
 onto both generated targets:
 
-- `.claude/commands/`
-- `.agents/skills/`
+- `.claude/commands/<skill>.md`
+- `.agents/skills/<skill>/SKILL.md`
 
-If the same filename exists in both sources, the
+If the same skill name exists in both sources, the
 local skill wins.
 
 The generated directories keep only a `.gitignore`
