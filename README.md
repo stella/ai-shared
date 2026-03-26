@@ -10,6 +10,15 @@ skills/                  # shared flat source of truth
 scripts/sync-ai-skills.sh
 ```
 
+Recommended shared planning conventions for consumer repos:
+
+```text
+.agents/ARCHITECTURE.md
+.agents/GOALS.md
+.agents/STATUS.md
+.agents/plans/
+```
+
 Consumer repositories are expected to use:
 
 ```text
@@ -52,3 +61,12 @@ Or add a thin wrapper script in the consumer repo:
 set -euo pipefail
 bash .ai/shared/scripts/sync-ai-skills.sh .
 ```
+
+## Current Shared Commands
+
+- `rabbit-round` — handle bot PR reviews systematically
+- `open-pr` — open a clean, verified pull request from the current branch
+- `plan` — create implementation plans using the shared `.agents/plans/` convention
+- `regression-hunt` — reproduce, isolate, fix, and lock down a regression
+- `security-audit` — generic security review with repo-specific overlays
+- `product-think` — shape a feature/problem before implementation
