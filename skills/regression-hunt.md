@@ -31,36 +31,40 @@ not requirements.
    - otherwise use the provided command, input, endpoint, or scenario
    - if no reproduction exists, build the smallest one you can
 
-3. **Bound the problem**:
+3. **Encode the regression in a test before fixing it**:
+   - prefer a focused unit or integration test that fails for the current bug
+   - if a nearby test file already exists, add the failing case there
+   - if the repo has no practical automated test harness for this area, create the
+     smallest reproducible check you can and say why a proper regression test was not added yet
+
+4. **Bound the problem**:
    - identify where the behavior lives
    - narrow the suspect files, modules, or commits
    - compare against the last known good behavior if possible
 
-4. **Inspect recent change history**:
+5. **Inspect recent change history**:
    - current diff
    - recent commits touching the area
    - suspect PRs or refactors
 
    Use git history when helpful, but do not stop at blame; verify the actual cause.
 
-5. **Find the root cause**:
+6. **Find the root cause**:
    - avoid fixing only the symptom
    - identify the exact logic, assumption, or edge case that changed
 
-6. **Fix it minimally**:
+7. **Fix it minimally**:
    - preserve intended newer behavior where possible
    - do not revert unrelated improvements just to make the symptom disappear
 
-7. **Add regression coverage**:
-   - add or update a test that would have caught this exact issue
-   - prefer the smallest focused regression test over broad churn
-
 8. **Verify**:
+   - make sure the new regression test now passes
    - rerun the focused regression check first
    - then run the relevant wider checks for confidence
 
 9. **Report back with**:
    - reproduction
+   - regression test added
    - root cause
    - fix
    - verification
