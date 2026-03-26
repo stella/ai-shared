@@ -26,7 +26,7 @@ Consumer repositories are expected to use:
 ```text
 .ai/shared/              # submodule pointing here
 .ai/local-skills/        # repo-local Codex-style skills
-.claude/commands/        # generated flat output
+.claude/commands/        # generated flat command files
 .agents/skills/          # generated Codex-style skills
 ```
 
