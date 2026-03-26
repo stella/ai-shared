@@ -18,6 +18,11 @@ copy_flat() {
   [ -d "$source_dir" ] || return 0
 
   find "$source_dir" -maxdepth 1 -type f | while read -r file; do
+    case "$(basename "$file")" in
+      .gitkeep|.DS_Store)
+        continue
+        ;;
+    esac
     cp "$file" "$target_dir/$(basename "$file")"
   done
 }
@@ -30,6 +35,11 @@ rebuild_target() {
 
   copy_flat "$SHARED_SKILLS_DIR" "$target_dir"
   copy_flat "$LOCAL_SKILLS_DIR" "$target_dir"
+
+  cat > "$target_dir/.gitignore" <<'EOF'
+*
+!.gitignore
+EOF
 }
 
 rebuild_target "$CLAUDE_DIR"

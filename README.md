@@ -34,6 +34,11 @@ onto both generated targets:
 If the same filename exists in both sources, the
 local skill wins.
 
+The generated directories keep only a `.gitignore`
+placeholder when no skills are present. `.gitkeep`
+files from source directories are ignored and are
+not copied into generated outputs.
+
 ## Usage from a consumer repo
 
 ```bash
