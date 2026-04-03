@@ -11,12 +11,99 @@ LOCAL_SKILLS_DIR="$REPO_ROOT/.ai/local-skills"
 CLAUDE_DIR="$REPO_ROOT/.claude/commands"
 AGENTS_DIR="$REPO_ROOT/.agents/skills"
 
+strip_frontmatter() {
+  local source_path="$1"
+
+  awk '
+    NR == 1 && $0 == "---" {
+      in_frontmatter = 1
+      next
+    }
+    in_frontmatter && $0 == "---" {
+      in_frontmatter = 0
+      next
+    }
+    !in_frontmatter {
+      if (!started && $0 ~ /^[[:space:]]*$/) {
+        next
+      }
+      started = 1
+      print
+    }
+  ' "$source_path"
+}
+
+source_has_frontmatter() {
+  local source_path="$1"
+
+  head -n 1 "$source_path" | grep -qx -- "---"
+}
+
+derive_description() {
+  local source_path="$1"
+
+  strip_frontmatter "$source_path" | awk '
+    /^# / && !seen_content {
+      next
+    }
+    /^[[:space:]]*$/ {
+      if (collecting) {
+        exit
+      }
+      next
+    }
+    {
+      line = $0
+      gsub(/[[:space:]]+/, " ", line)
+      if (!collecting) {
+        description = line
+        collecting = 1
+        seen_content = 1
+        next
+      }
+      description = description " " line
+    }
+    END {
+      print description
+    }
+  '
+}
+
+yaml_quote() {
+  local value="$1"
+
+  value=${value//\'/\'\'}
+  printf "'%s'" "$value"
+}
+
 copy_skill_to_claude() {
   local source_path="$1"
   local skill_name="$2"
   local target_dir="$3"
 
-  cp "$source_path" "$target_dir/$skill_name.md"
+  strip_frontmatter "$source_path" > "$target_dir/$skill_name.md"
+}
+
+write_agent_skill() {
+  local source_path="$1"
+  local skill_name="$2"
+  local target_path="$3"
+  local description=""
+
+  if source_has_frontmatter "$source_path"; then
+    cp "$source_path" "$target_path"
+    return
+  fi
+
+  description="$(derive_description "$source_path")"
+
+  {
+    printf -- '---\n'
+    printf 'name: %s\n' "$skill_name"
+    printf 'description: %s\n' "$(yaml_quote "$description")"
+    printf -- '---\n\n'
+    strip_frontmatter "$source_path"
+  } > "$target_path"
 }
 
 copy_skill_to_agents() {
@@ -31,10 +118,11 @@ copy_skill_to_agents() {
 
   if [ -d "$source_dir/$entry" ]; then
     cp -R "$source_dir/$entry/." "$target_skill_dir/"
+    write_agent_skill "$source_dir/$entry/SKILL.md" "$skill_name" "$target_skill_dir/SKILL.md"
     return
   fi
 
-  cp "$source_dir/$entry" "$target_skill_dir/SKILL.md"
+  write_agent_skill "$source_dir/$entry" "$skill_name" "$target_skill_dir/SKILL.md"
 }
 
 sync_from_source() {
