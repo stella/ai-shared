@@ -1,3 +1,8 @@
+---
+name: security-audit
+description: 'Run a security-focused code audit with a generic checklist first, then layer on repo-specific risks.'
+---
+
 # Security Audit
 
 Run a security-focused code audit with a generic checklist first, then
