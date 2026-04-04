@@ -1,6 +1,6 @@
 ---
 name: regression-hunt
-description: 'Track down a behavior that used to work and now fails, changed, or regressed. Use this when a bug report points to a recent breakage, especially when the cause is not obvious yet.'
+description: 'Track down a behavior that used to work and now fails, changed, or regressed.'
 ---
 
 # Regression Hunt
