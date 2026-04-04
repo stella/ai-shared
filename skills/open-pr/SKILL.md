@@ -1,8 +1,3 @@
----
-name: open-pr
-description: 'Open a pull request for the current branch with a clean title, a useful description, and enough verification context for reviewers.'
----
-
 # Open PR
 
 Open a pull request for the current branch with a clean title, a useful
@@ -27,7 +22,8 @@ description, and enough verification context for reviewers.
    - typecheck
    - build
 
-   Use the repo's actual commands. If something cannot be run, say so in the PR body.
+   Use the repo's actual commands. If something cannot be run, say so
+   in the PR body.
 
 4. **Push the branch** if needed:
 
@@ -56,7 +52,18 @@ description, and enough verification context for reviewers.
 
    Prefer an explicit title/body rather than interactive editing.
 
-8. **After opening**, fetch the PR URL/number and report it back.
+8. **Run one rabbit round after opening**:
+   - invoke `/rabbit-round` once
+   - if it returns `pending_bots`, stop and leave the PR as draft
+   - if it returns `needs_changes` or `failing_ci`, address the issues
+     and rerun manually later
+   - if it returns `clean`, report that the PR is ready for the next
+     human-controlled step
+
+   Do not assume background scheduling tools exist. Do not create cron
+   jobs or loops from this skill.
+
+9. **After opening**, fetch the PR URL/number and report it back.
 
 ## Guidelines
 
