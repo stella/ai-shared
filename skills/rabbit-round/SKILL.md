@@ -1,3 +1,8 @@
+---
+name: rabbit-round
+description: 'Process automated PR review comments systematically. Use this for CodeRabbit, Gemini, GitHub Copilot, Devin, Greptile, and similar bots.'
+---
+
 # Rabbit Round
 
 Process automated PR review comments systematically. Use this for

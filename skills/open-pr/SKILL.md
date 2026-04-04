@@ -1,3 +1,8 @@
+---
+name: open-pr
+description: 'Open a pull request for the current branch with a clean title, a useful description, and enough verification context for reviewers.'
+---
+
 # Open PR
 
 Open a pull request for the current branch with a clean title, a useful
