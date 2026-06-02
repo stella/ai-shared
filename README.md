@@ -6,6 +6,8 @@ repositories.
 ## Layout
 
 ```text
+modules/
+  <module-name>.md      # reusable AGENTS.md fragments
 skills/
   <skill-name>/
     SKILL.md            # shared Codex skill source of truth
@@ -26,14 +28,30 @@ Consumer repositories are expected to use:
 
 ```text
 .ai/shared/              # submodule pointing here
+.ai/manifest.json        # selected modules and local AGENTS fragment
+.ai/local/agents.md      # repo-specific AGENTS.md fragment
 .ai/local-skills/        # repo-local Codex-style skills
+AGENTS.md                # generated and committed
+CLAUDE.md                # generated shim importing AGENTS.md
+GEMINI.md                # generated shim importing AGENTS.md
 .claude/commands/        # generated flat command files
 .agents/skills/          # generated Codex-style skills
 ```
 
 ## Sync behavior
 
-The sync script overlays:
+The sync script assembles `AGENTS.md` from:
+
+1. `.ai/shared/modules/<name>.md`, in `.ai/manifest.json` order
+2. `.ai/local/agents.md`
+
+It also generates `CLAUDE.md` and `GEMINI.md` adapters so the committed root
+instructions are immediately usable by multiple coding agents.
+When `.ai/manifest.json` contains an `agents` object, these root prompt files are
+generated even if the module list is empty and the local fragment is absent, so
+`--check` still catches stale committed instructions.
+
+The same script overlays skills from:
 
 1. `.ai/shared/skills/`
 2. `.ai/local-skills/`
@@ -51,6 +69,12 @@ placeholder when no skills are present. `.gitkeep`
 files from source directories are ignored and are
 not copied into generated outputs.
 
+Use `--check` in CI to fail when committed generated files are stale:
+
+```bash
+bash .ai/shared/scripts/sync-ai-skills.sh --check .
+```
+
 ## Usage from a consumer repo
 
 ```bash
@@ -62,7 +86,7 @@ Or add a thin wrapper script in the consumer repo:
 ```bash
 #!/usr/bin/env bash
 set -euo pipefail
-bash .ai/shared/scripts/sync-ai-skills.sh .
+bash .ai/shared/scripts/sync-ai-skills.sh "$@" .
 ```
 
 To link generated agent skills into Codex's global skill directory:
