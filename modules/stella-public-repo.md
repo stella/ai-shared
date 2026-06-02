@@ -14,6 +14,18 @@ marks, citation styles, legal terminology) when relevant.
 - Do not publish private user, customer, infrastructure, incident, pricing, roadmap,
   or competitive context in generated instructions or GitHub artifacts.
 
+## Compliance-Aware Engineering
+
+Stella code is intended for use in environments with SOC 2 and ISO 27001 style
+controls. Treat security, auditability, least privilege, data minimization, and
+workspace isolation as baseline engineering requirements.
+
+When making changes, prefer designs that preserve clear ownership boundaries,
+structured audit trails, encryption-aware data handling, and explicit access checks.
+Keep public PRs and comments focused on the implementation visible in the diff; do
+not describe private controls, internal security architecture, or certification
+details unless they are already public in the repository.
+
 ## GitHub Interactions
 
 - When commenting on GitHub (PRs, issues), include "CC on behalf of @username" where
