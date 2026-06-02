@@ -39,10 +39,13 @@ disproportionate effort here. Be aggressive. Be creative. Refuse to give up.
 
 Try these in roughly this order:
 
-1. Run the failing test via the package's test script (it preserves
-   `--preload` and other flags wired into the script); avoid `bun --bun
-   test` from a worktree root. Use `bun test --bail --only` to fast-fail on
-   the single relevant case during the loop.
+1. Run the failing test via the package's test script — e.g.
+   `bun run test -- --bail -t "<pattern>"` — so flags wired into the
+   script (`--preload`, custom setup) are preserved; calling `bun test`
+   directly bypasses them. Avoid `bun --bun test` from a worktree root.
+   Note that `bun test` positional arguments are **file path patterns**,
+   not test names; use `-t "<pattern>"` to filter by test name and
+   `--bail` to fast-fail.
 2. Curl / HTTP script against the backend dev server. Wrap fetches in
    `AbortSignal.timeout(10_000)` so a hung request does not rot the loop.
 3. CLI invocation diffing stdout against a known-good snapshot.
@@ -55,8 +58,12 @@ Try these in roughly this order:
    usually faster and more honest than mocking.
 7. Differential loop: same input through old-commit vs new-commit, diff
    outputs.
-8. Bisection harness against the loop above, e.g.:
-   `git bisect run bun test --bail <test-name>`.
+8. Bisection harness against the loop above. Drive it through the
+   package script so wired flags survive, e.g.:
+   `git bisect run bun run test -- --bail -t "<test-name>"`.
+   Verify the harness actually fails on a known-bad commit before
+   starting — `bun test` exits 0 when no test names match, which would
+   silently mark every commit as good and produce the wrong culprit.
 9. Property / fuzz loop if the bug is "sometimes wrong output".
 
 Then treat the loop as a product. Iterate on it:
@@ -129,9 +136,10 @@ variable at a time.
 Preference:
 
 1. **Bun inspector.** Run the failing process with `bun --inspect-brk`
-   (e.g. `bun --inspect-brk test <name>` or your dev script with the flag
-   prepended), open the printed `devtools://` URL in Chrome, set one
-   breakpoint at the suspected fault. One breakpoint beats ten logs.
+   (e.g. `bun --inspect-brk test <file-path>` for a specific test file,
+   or your dev script with the flag prepended), open the printed
+   `devtools://` URL in Chrome, set one breakpoint at the suspected
+   fault. One breakpoint beats ten logs.
 2. Targeted logs at the boundaries that distinguish hypotheses.
 3. Never "log everything and grep".
 
