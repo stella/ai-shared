@@ -135,11 +135,15 @@ variable at a time.
 
 Preference:
 
-1. **Bun inspector.** Run the failing process with `bun --inspect-brk`
-   (e.g. `bun --inspect-brk test <file-path>` for a specific test file,
-   or your dev script with the flag prepended), open the printed
-   `devtools://` URL in Chrome, set one breakpoint at the suspected
-   fault. One breakpoint beats ten logs.
+1. **Bun inspector.** `bun --inspect-brk` is a runtime flag that must
+   attach to the process actually running the code, which means wrapping
+   it in `bun run <script>` will not propagate to the spawned child.
+   Either prepend `--inspect-brk` to the test command inside your
+   package script temporarily, or invoke directly while replicating the
+   flags the script wires — e.g. `bun --inspect-brk test --preload
+   ./setup.ts <file-path>`. Open the printed `devtools://` URL in
+   Chrome, set one breakpoint at the suspected fault. One breakpoint
+   beats ten logs.
 2. Targeted logs at the boundaries that distinguish hypotheses.
 3. Never "log everything and grep".
 
