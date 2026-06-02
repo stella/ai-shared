@@ -1,3 +1,7 @@
+<p align="center">
+  <img src=".github/assets/banner.png" alt="Stella AI shared" width="100%" />
+</p>
+
 # ai-shared
 
 Shared AI skills and sync tooling for Stella
