@@ -47,6 +47,9 @@ The sync script assembles `AGENTS.md` from:
 
 It also generates `CLAUDE.md` and `GEMINI.md` adapters so the committed root
 instructions are immediately usable by multiple coding agents.
+When `.ai/manifest.json` contains an `agents` object, these root prompt files are
+generated even if the module list is empty and the local fragment is absent, so
+`--check` still catches stale committed instructions.
 
 The same script overlays skills from:
 

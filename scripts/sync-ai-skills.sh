@@ -41,6 +41,7 @@ GENERATED_AGENTS_DIR="$TMP_ROOT/.agents/skills"
 
 TARGET_CLAUDE_DIR="$REPO_ROOT/.claude/commands"
 TARGET_AGENTS_DIR="$REPO_ROOT/.agents/skills"
+AGENT_FILES_WRITTEN=false
 
 strip_frontmatter() {
   local source_path="$1"
@@ -252,14 +253,14 @@ trim_trailing_blank_lines() {
 write_agent_files() {
   [ -f "$MANIFEST_PATH" ] || return 0
 
-  local title local_path module_names module module_path
+  local agents_configured title local_path module_names module module_path
+  agents_configured="$(manifest_value 'manifest.agents ? "true" : "false"')"
+
+  [ "$agents_configured" = "true" ] || return 0
+
   title="$(manifest_value 'manifest.agents?.title ?? "AGENTS.md"')"
   local_path="$(manifest_value 'manifest.agents?.local ?? ".ai/local/agents.md"')"
   module_names="$(manifest_value 'manifest.agents?.modules ?? []')"
-
-  if [ -z "$module_names" ] && [ ! -f "$REPO_ROOT/$local_path" ]; then
-    return 0
-  fi
 
   {
     printf '# %s\n\n' "$title"
@@ -302,6 +303,8 @@ EOF
 
 Use `AGENTS.md` as the project context.
 EOF
+
+  AGENT_FILES_WRITTEN=true
 }
 
 write_skill_files() {
@@ -346,7 +349,7 @@ write_skill_files
 if [ "$CHECK_MODE" = true ]; then
   errors=0
 
-  if [ -f "$TMP_ROOT/AGENTS.md" ]; then
+  if [ "$AGENT_FILES_WRITTEN" = true ]; then
     compare_file "$TMP_ROOT/AGENTS.md" "$REPO_ROOT/AGENTS.md" || errors=$((errors + 1))
     compare_file "$TMP_ROOT/CLAUDE.md" "$REPO_ROOT/CLAUDE.md" || errors=$((errors + 1))
     compare_file "$TMP_ROOT/GEMINI.md" "$REPO_ROOT/GEMINI.md" || errors=$((errors + 1))
@@ -363,7 +366,7 @@ if [ "$CHECK_MODE" = true ]; then
   exit 0
 fi
 
-if [ -f "$TMP_ROOT/AGENTS.md" ]; then
+if [ "$AGENT_FILES_WRITTEN" = true ]; then
   cp "$TMP_ROOT/AGENTS.md" "$REPO_ROOT/AGENTS.md"
   cp "$TMP_ROOT/CLAUDE.md" "$REPO_ROOT/CLAUDE.md"
   cp "$TMP_ROOT/GEMINI.md" "$REPO_ROOT/GEMINI.md"
@@ -375,8 +378,8 @@ cp -R "$GENERATED_CLAUDE_DIR/." "$TARGET_CLAUDE_DIR/"
 cp -R "$GENERATED_AGENTS_DIR/." "$TARGET_AGENTS_DIR/"
 
 echo "Synced AI prompts and skills into:"
-[ -f "$TMP_ROOT/AGENTS.md" ] && echo "  $REPO_ROOT/AGENTS.md"
-[ -f "$TMP_ROOT/CLAUDE.md" ] && echo "  $REPO_ROOT/CLAUDE.md"
-[ -f "$TMP_ROOT/GEMINI.md" ] && echo "  $REPO_ROOT/GEMINI.md"
+[ "$AGENT_FILES_WRITTEN" = true ] && echo "  $REPO_ROOT/AGENTS.md"
+[ "$AGENT_FILES_WRITTEN" = true ] && echo "  $REPO_ROOT/CLAUDE.md"
+[ "$AGENT_FILES_WRITTEN" = true ] && echo "  $REPO_ROOT/GEMINI.md"
 echo "  $TARGET_CLAUDE_DIR"
 echo "  $TARGET_AGENTS_DIR"
