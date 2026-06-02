@@ -55,7 +55,10 @@ self-review, quality checks, and open a draft PR.
    ```bash
    DEFAULT_BRANCH="$(git symbolic-ref --short refs/remotes/origin/HEAD 2>/dev/null | sed 's@^origin/@@')"
    if [ -z "$DEFAULT_BRANCH" ]; then
-     DEFAULT_BRANCH="$(gh repo view --json defaultBranchRef --jq '.defaultBranchRef.name')"
+     DEFAULT_BRANCH="$(gh repo view --json defaultBranchRef --jq '.defaultBranchRef.name' 2>/dev/null)"
+   fi
+   if [ -z "$DEFAULT_BRANCH" ]; then
+     DEFAULT_BRANCH="main"
    fi
 
    git fetch origin "$DEFAULT_BRANCH"
