@@ -3,6 +3,8 @@ set -euo pipefail
 
 CHECK_MODE=false
 REPO_ROOT="."
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+SCRIPT_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 
 while [ "$#" -gt 0 ]; do
   case "$1" in
@@ -26,6 +28,19 @@ while [ "$#" -gt 0 ]; do
 done
 
 REPO_ROOT="$(cd "$REPO_ROOT" && pwd)"
+
+if [[ "$REPO_ROOT" == "$SCRIPT_ROOT" &&
+  ! -d "$REPO_ROOT/.ai/shared" &&
+  -d "$REPO_ROOT/modules" &&
+  -d "$REPO_ROOT/skills" ]]; then
+  if [[ "$CHECK_MODE" == true ]]; then
+    echo "ai-shared source repo; no generated consumer files to check."
+    exit 0
+  fi
+
+  echo "error: run this script from a consumer repo, or pass a consumer repo path" >&2
+  exit 1
+fi
 
 SHARED_ROOT="$REPO_ROOT/.ai/shared"
 SHARED_MODULES_DIR="$SHARED_ROOT/modules"
