@@ -112,3 +112,4 @@ unprefixed global names.
 - `regression-hunt` — reproduce, isolate, fix, and lock down a regression
 - `security-audit` — generic security review with repo-specific overlays
 - `product-think` — shape a feature/problem before implementation
+- `update-deps` — review and update third-party dependencies
