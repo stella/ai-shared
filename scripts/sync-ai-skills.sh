@@ -27,6 +27,18 @@ done
 
 REPO_ROOT="$(cd "$REPO_ROOT" && pwd)"
 
+if [ ! -d "$REPO_ROOT/.ai/shared" ] &&
+  [ -d "$REPO_ROOT/modules" ] &&
+  [ -d "$REPO_ROOT/skills" ]; then
+  if [ "$CHECK_MODE" = true ]; then
+    echo "ai-shared source repo; no generated consumer files to check."
+    exit 0
+  fi
+
+  echo "error: run this script from a consumer repo, or pass a consumer repo path" >&2
+  exit 1
+fi
+
 SHARED_ROOT="$REPO_ROOT/.ai/shared"
 SHARED_MODULES_DIR="$SHARED_ROOT/modules"
 SHARED_SKILLS_DIR="$SHARED_ROOT/skills"
