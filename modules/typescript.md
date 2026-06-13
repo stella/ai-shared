@@ -12,6 +12,13 @@
 - When a type mismatch appears, trace it to the source (e.g., the handler or query
   that produces the wrong type) rather than casting at the consumer. Check git to
   verify you did not introduce the mismatch yourself before blaming the framework.
+- Never annotate or cast a value the compiler already infers, and never pass explicit
+  type arguments to inference-driven hooks (`useLoaderData<T>()`, `useQuery<T>()`, Eden
+  calls). Every annotation or explicit generic masks real errors and breaks the
+  inference chain; let inference flow and narrow at the boundary instead.
+- Validate object literals against a large union type (route, link, query options) with
+  `as const satisfies T`, not a `: T` annotation. `satisfies` checks the value without
+  widening it or paying the annotation's instantiation cost.
 - Use `.at(0)` when the element may not exist (signals possible absence). Use `[0]`
   only when existence is already established (length check, or a `// SAFETY:` comment).
 - Prefer arrow functions over function expressions
@@ -36,6 +43,9 @@
 - If a return type is noisy enough to hurt readability, hoist it into a nearby alias
   such as `SomethingResult` and use it in the signature (e.g., `SomethingResult` or
   `Promise<SomethingResult>`). If the return type is simple, keep it inline.
+- Watch type-instantiation cost in hot generic paths (route trees, query options, Eden
+  surfaces): prefer narrowing (`satisfies`, route `from`, query `select`) over
+  annotation, and keep large unused types out of inferred return positions.
 
 ### Module Side Effects
 
