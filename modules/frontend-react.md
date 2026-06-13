@@ -43,6 +43,8 @@ Full brand deck, micro-interaction guidelines, and visual noise rules in
 - Prefer `useRouteContext` for data already provided by parent route loaders
   (`beforeLoad`) over firing a separate query. Extend the route context if needed
   rather than adding a query.
+- When a route loader only primes a TanStack Query cache, return `void` from it so its
+  return type stays out of the route tree and does not inflate type-inference cost.
 - Use `useSuspenseQuery` only in route/page content where the query is preloaded or
   wrapped by an explicit local `Suspense` boundary. In shared chrome (breadcrumbs,
   headers, toolbars, sidebar shell), prefer `useQuery` so a cache miss cannot suspend
@@ -50,6 +52,10 @@ Full brand deck, micro-interaction guidelines, and visual noise rules in
 - Always use `select` with `useParams`, `useSearch`, and `useRouteContext` to subscribe
   only to the fields the component needs. Without `select`, the component rerenders on
   any param/search/context change.
+- Pass `from` to `useParams`/`useSearch`/`Link` (or `strict: false` to `useParams`/
+  `useSearch` in shared chrome that spans routes) so types narrow from the full route
+  union to a single route. The unnarrowed union is both imprecise and expensive to
+  typecheck.
 - Use `useDebouncedCallback` from `use-debounce` instead of hand-rolling debounce with
   `useRef<setTimeout>` + manual `clearTimeout`. The library handles cleanup
   automatically.
