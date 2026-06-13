@@ -52,9 +52,10 @@ Full brand deck, micro-interaction guidelines, and visual noise rules in
 - Always use `select` with `useParams`, `useSearch`, and `useRouteContext` to subscribe
   only to the fields the component needs. Without `select`, the component rerenders on
   any param/search/context change.
-- Pass `from` (or `strict: false` for shared chrome that spans routes) to
-  `useParams`/`useSearch`/`Link` so types narrow from the full route union to a single
-  route. The unnarrowed union is both imprecise and expensive to typecheck.
+- Pass `from` to `useParams`/`useSearch`/`Link` (or `strict: false` to `useParams`/
+  `useSearch` in shared chrome that spans routes) so types narrow from the full route
+  union to a single route. The unnarrowed union is both imprecise and expensive to
+  typecheck.
 - Use `useDebouncedCallback` from `use-debounce` instead of hand-rolling debounce with
   `useRef<setTimeout>` + manual `clearTimeout`. The library handles cleanup
   automatically.
