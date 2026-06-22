@@ -11,7 +11,8 @@
   manual discipline
 - Conventional Commits: `feat:`, `chore:`, `fix:`, `docs:`
 - Rebase feature branches onto main (linear history)
-- Enable `git rerere` (`git config --global rerere.enabled true`) so conflict
+- Enable `git rerere` (`git config --global rerere.enabled true`, plus
+  `rerere.autoupdate true` to auto-stage what it resolves) so conflict
   resolutions are recorded and auto-replayed across repeated or long rebases
 - Fail fast: validate at boundaries, return/throw early
 - Minimize brace nesting: invert conditions, early returns
