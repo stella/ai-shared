@@ -9,6 +9,10 @@
 - If TypeScript can make a class of bug structurally impossible (branded types,
   discriminated unions, exhaustive checks), prefer that over runtime validation or
   manual discipline
+- Avoid boolean fields for states that may grow. Use a named discriminator or
+  domain type for values that answer "which kind/status/mode/type?" rather than
+  a permanent yes/no question; a two-value union, enum, or equivalent domain type
+  now is usually cheaper than migrating an `isX` flag later.
 - Conventional Commits: `feat:`, `chore:`, `fix:`, `docs:`
 - Rebase feature branches onto main (linear history)
 - Fail fast: validate at boundaries, return/throw early
