@@ -87,6 +87,13 @@
 - Use fixture parity tests when replacing an implementation in another language.
   The Rust core, TypeScript binding, and Python binding should produce the same
   structured result from the same fixtures.
+- Use `insta` snapshots for structured diagnostics, rule output, CLI output,
+  registry metadata, and other reviewable behavior diffs. Prefer YAML or JSON
+  snapshots over hand-written assertion lists when the important contract is the
+  full shape of the output.
+- Review snapshot changes deliberately with `cargo insta review` or
+  `cargo insta accept`; do not accept broad snapshot churn without explaining
+  the behavior change.
 - Benchmark behavior that is part of the product. Track cold start, warm run,
   artifact load, preparation, and execution separately.
 - Do not snapshot sensitive raw text unless the fixture is intentionally public
