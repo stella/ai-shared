@@ -47,6 +47,7 @@ SHARED_MODULES_DIR="$SHARED_ROOT/modules"
 SHARED_SKILLS_DIR="$SHARED_ROOT/skills"
 LOCAL_SKILLS_DIR="$REPO_ROOT/.ai/local-skills"
 MANIFEST_PATH="$REPO_ROOT/.ai/manifest.json"
+SHARED_ROOT_FILES=(".coderabbit.yaml")
 
 TMP_ROOT="$(mktemp -d)"
 trap 'rm -rf "$TMP_ROOT"' EXIT
@@ -265,6 +266,88 @@ trim_trailing_blank_lines() {
   ' "$target_path"
 }
 
+write_coderabbit_file() {
+  local source_path="$1"
+  local target_path="$2"
+  local runtime
+  runtime="$(json_runtime)"
+
+  "$runtime" -e '
+    const fs = require("node:fs");
+    process.on("uncaughtException", (error) => {
+      console.error(`error: ${error.message}`);
+      process.exit(1);
+    });
+
+    const sourcePath = process.argv[1];
+    const manifestPath = process.argv[2];
+    const targetPath = process.argv[3];
+    const pathFilterMarker = "    # sync-ai: injected path filters";
+    const guidelineMarker = "      # sync-ai: injected code guideline file patterns";
+
+    const manifest = fs.existsSync(manifestPath)
+      ? JSON.parse(fs.readFileSync(manifestPath, "utf8"))
+      : {};
+
+    const coderabbit = manifest.coderabbit ?? {};
+
+    if (
+      coderabbit === null ||
+      typeof coderabbit !== "object" ||
+      Array.isArray(coderabbit)
+    ) {
+      throw new Error("manifest.coderabbit must be an object");
+    }
+
+    const assertStringArray = (value, name) => {
+      if (value === undefined) {
+        return [];
+      }
+
+      if (!Array.isArray(value) || value.some((item) => typeof item !== "string")) {
+        throw new Error(`manifest.coderabbit.${name} must be an array of strings`);
+      }
+
+      return value;
+    };
+
+    const yamlString = (value) => JSON.stringify(value);
+
+    const injectList = (text, marker, indent, values) => {
+      if (values.length === 0) {
+        return text;
+      }
+
+      if (!text.includes(marker)) {
+        throw new Error(`missing CodeRabbit injection marker: ${marker.trim()}`);
+      }
+
+      const injected = values.map((value) => `${indent}- ${yamlString(value)}`).join("\n");
+      return text.replace(marker, `${injected}\n${marker}`);
+    };
+
+    let output = fs.readFileSync(sourcePath, "utf8");
+    output = injectList(
+      output,
+      pathFilterMarker,
+      "    ",
+      assertStringArray(coderabbit.pathFilters, "pathFilters"),
+    );
+    output = injectList(
+      output,
+      guidelineMarker,
+      "      ",
+      assertStringArray(
+        coderabbit.codeGuidelineFilePatterns,
+        "codeGuidelineFilePatterns",
+      ),
+    );
+
+    fs.mkdirSync(require("node:path").dirname(targetPath), { recursive: true });
+    fs.writeFileSync(targetPath, output.replace(/\n+$/u, "\n"));
+  ' "$source_path" "$MANIFEST_PATH" "$target_path"
+}
+
 write_agent_files() {
   [ -f "$MANIFEST_PATH" ] || return 0
 
@@ -332,6 +415,26 @@ write_skill_files() {
   write_placeholder "$GENERATED_AGENTS_DIR"
 }
 
+write_shared_root_files() {
+  local file_name source_path
+
+  for file_name in "${SHARED_ROOT_FILES[@]}"; do
+    source_path="$SHARED_ROOT/$file_name"
+
+    [ -f "$source_path" ] || continue
+
+    mkdir -p "$(dirname "$TMP_ROOT/$file_name")"
+    case "$file_name" in
+      .coderabbit.yaml)
+        write_coderabbit_file "$source_path" "$TMP_ROOT/$file_name"
+        ;;
+      *)
+        cp "$source_path" "$TMP_ROOT/$file_name"
+        ;;
+    esac
+  done
+}
+
 compare_file() {
   local generated_path="$1"
   local target_path="$2"
@@ -360,15 +463,22 @@ compare_dir() {
 
 write_agent_files
 write_skill_files
+write_shared_root_files
 
 if [ "$CHECK_MODE" = true ]; then
   errors=0
+  root_file=""
 
   if [ "$AGENT_FILES_WRITTEN" = true ]; then
     compare_file "$TMP_ROOT/AGENTS.md" "$REPO_ROOT/AGENTS.md" || errors=$((errors + 1))
     compare_file "$TMP_ROOT/CLAUDE.md" "$REPO_ROOT/CLAUDE.md" || errors=$((errors + 1))
     compare_file "$TMP_ROOT/GEMINI.md" "$REPO_ROOT/GEMINI.md" || errors=$((errors + 1))
   fi
+
+  for root_file in "${SHARED_ROOT_FILES[@]}"; do
+    [ -f "$TMP_ROOT/$root_file" ] || continue
+    compare_file "$TMP_ROOT/$root_file" "$REPO_ROOT/$root_file" || errors=$((errors + 1))
+  done
 
   compare_dir "$GENERATED_CLAUDE_DIR" "$TARGET_CLAUDE_DIR" || errors=$((errors + 1))
   compare_dir "$GENERATED_AGENTS_DIR" "$TARGET_AGENTS_DIR" || errors=$((errors + 1))
@@ -387,6 +497,12 @@ if [ "$AGENT_FILES_WRITTEN" = true ]; then
   cp "$TMP_ROOT/GEMINI.md" "$REPO_ROOT/GEMINI.md"
 fi
 
+for root_file in "${SHARED_ROOT_FILES[@]}"; do
+  [ -f "$TMP_ROOT/$root_file" ] || continue
+  mkdir -p "$(dirname "$REPO_ROOT/$root_file")"
+  cp "$TMP_ROOT/$root_file" "$REPO_ROOT/$root_file"
+done
+
 rm -rf "$TARGET_CLAUDE_DIR" "$TARGET_AGENTS_DIR"
 mkdir -p "$TARGET_CLAUDE_DIR" "$TARGET_AGENTS_DIR"
 cp -R "$GENERATED_CLAUDE_DIR/." "$TARGET_CLAUDE_DIR/"
@@ -396,5 +512,8 @@ echo "Synced AI prompts and skills into:"
 [ "$AGENT_FILES_WRITTEN" = true ] && echo "  $REPO_ROOT/AGENTS.md"
 [ "$AGENT_FILES_WRITTEN" = true ] && echo "  $REPO_ROOT/CLAUDE.md"
 [ "$AGENT_FILES_WRITTEN" = true ] && echo "  $REPO_ROOT/GEMINI.md"
+for root_file in "${SHARED_ROOT_FILES[@]}"; do
+  [ -f "$TMP_ROOT/$root_file" ] && echo "  $REPO_ROOT/$root_file"
+done
 echo "  $TARGET_CLAUDE_DIR"
 echo "  $TARGET_AGENTS_DIR"

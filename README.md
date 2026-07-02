@@ -17,6 +17,7 @@ skills/
     SKILL.md            # shared Codex skill source of truth
 scripts/sync-ai-skills.sh
 scripts/link-codex-skills.sh
+.coderabbit.yaml          # shared CodeRabbit configuration
 ```
 
 Recommended shared planning conventions for consumer repos:
@@ -40,6 +41,7 @@ CLAUDE.md                # generated shim importing AGENTS.md
 GEMINI.md                # generated shim importing AGENTS.md
 .claude/commands/        # generated flat command files
 .agents/skills/          # generated Codex-style skills
+.coderabbit.yaml         # generated shared CodeRabbit config
 ```
 
 ## Sync behavior
@@ -72,6 +74,20 @@ The generated directories keep only a `.gitignore`
 placeholder when no skills are present. `.gitkeep`
 files from source directories are ignored and are
 not copied into generated outputs.
+
+The same sync also copies shared root-level automation files, currently
+`.coderabbit.yaml`, from `.ai/shared/` into the consumer repository root.
+CodeRabbit path filters and guideline files can be extended per repo from
+`.ai/manifest.json`:
+
+```json
+{
+  "coderabbit": {
+    "pathFilters": ["!apps/web/src/routeTree.gen.ts"],
+    "codeGuidelineFilePatterns": ["**/.cursorrules"]
+  }
+}
+```
 
 Use `--check` in CI to fail when committed generated files are stale:
 
