@@ -50,6 +50,19 @@
   organized by language/concept where relevant.
 - Public docs, logs, diagnostics, and comments should write `stella` lowercase.
 
+### Rust Extensible Rule Systems
+
+- For analyzers, detectors, linters, validators, and similar extensible rule
+  systems, prefer module-owned declarative rule specs. Co-locate the rule id,
+  diagnostic id, required inputs, dependencies, support resources, activation
+  predicate, execution hook, and tests with the rule implementation.
+- Keep central registries thin. They should preserve cross-module ordering and
+  expose iteration, not contain rule-specific branching, diagnostic mapping, or
+  activation logic.
+- Reach for macros or derives only when they remove repeated plumbing across
+  many rules. Humans should write domain behavior; generated code should handle
+  mechanical metadata wiring.
+
 ### Rust Module Side Effects
 
 - Avoid expensive module-level initialization. Prefer explicit prepare/build
