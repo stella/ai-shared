@@ -21,6 +21,12 @@
 - Avoid spread in loop accumulators (use `.push()`)
 - If you encounter a pre-existing bug or lint error while working on something else,
   fix it (separate commit)
+- Orchestrate across model tiers when your harness supports subagents and model
+  selection: delegate well-scoped, mechanical, or independently verifiable subtasks
+  (edits, searches, refactors, test runs) to a subagent on the cheapest model that
+  does them correctly; keep planning, cross-cutting design, security-sensitive work,
+  and final review on the primary model. If your tooling has no subagents or model
+  selection, ignore this.
 
 ## Design Principles
 
