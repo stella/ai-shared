@@ -12,8 +12,9 @@ a CI failure or a reviewable diff, never silently. The guards:
 - `x-db-queries` response header (dev/CI only): per-request DB query counter that
   feeds the network baseline's query budgets.
 
-Fix the regression first. Reseeding a baseline (`E2E_NETWORK_BASELINE=write`,
-`bun scripts/bundle-baseline.ts --write-baseline`) is a product decision that must
+Fix the regression first. Reseeding a baseline (the route-smoke e2e suite run with
+`E2E_NETWORK_BASELINE=write` set, or `bun scripts/bundle-baseline.ts
+--write-baseline`) is a product decision that must
 be justified in the PR description; it is not a mechanical way to make CI green.
 Start route data in loaders (`ensureRouteQueryData`), batch DB work instead of
 growing a query budget, and tighten baselines after a perf fix. Full guidelines,
