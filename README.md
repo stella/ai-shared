@@ -92,7 +92,7 @@ Listed files are copied verbatim from `.ai/shared/` into the repo root and
 verified by `--check`, exactly like `.coderabbit.yaml`. Opt-in keeps repos with
 stricter local configs (e.g. a repo that bans wall-clock/RNG access in
 `clippy.toml`) from being overwritten. Entries must be repo-relative paths
-without `..`.
+without `..`, and every listed source must exist in `.ai/shared`.
 
 CodeRabbit path filters and guideline files can be extended per repo from
 `.ai/manifest.json`:
@@ -110,6 +110,12 @@ Use `--check` in CI to fail when committed generated files are stale:
 
 ```bash
 bash .ai/shared/scripts/sync-ai-skills.sh --check .
+```
+
+The sync script's validation regressions can be run in this repository with:
+
+```bash
+bash scripts/test-sync-ai-skills.sh
 ```
 
 ## Usage from a consumer repo

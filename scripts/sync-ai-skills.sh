@@ -253,6 +253,71 @@ manifest_value() {
   ' "$MANIFEST_PATH" "$expression"
 }
 
+manifest_shared_root_files() {
+  local runtime
+  runtime="$(json_runtime)"
+
+  "$runtime" -e '
+    const fs = require("node:fs");
+    const path = require("node:path");
+
+    process.on("uncaughtException", (error) => {
+      console.error(`error: ${error.message}`);
+      process.exit(1);
+    });
+
+    const manifestPath = process.argv[1];
+    const sharedRoot = fs.realpathSync(process.argv[2]);
+    const manifest = JSON.parse(fs.readFileSync(manifestPath, "utf8"));
+    const entries = Object.hasOwn(manifest, "sharedRootFiles")
+      ? manifest.sharedRootFiles
+      : [];
+
+    if (!Array.isArray(entries)) {
+      throw new Error("manifest.sharedRootFiles must be an array of non-empty strings");
+    }
+
+    for (const [index, entry] of entries.entries()) {
+      const field = `manifest.sharedRootFiles[${index}]`;
+      if (typeof entry !== "string" || entry.trim().length === 0) {
+        throw new Error(`${field} must be a non-empty string`);
+      }
+      if (entry.includes("\n") || entry.includes("\r")) {
+        throw new Error(`${field} must not contain a line break`);
+      }
+      if (
+        path.isAbsolute(entry) ||
+        entry.split(/[\\/]/u).some((segment) => segment === "..")
+      ) {
+        throw new Error(`${field} must be a repo-relative path without ".."`);
+      }
+
+      const sourcePath = path.resolve(sharedRoot, entry);
+      const sharedPrefix = `${sharedRoot}${path.sep}`;
+      if (!sourcePath.startsWith(sharedPrefix)) {
+        throw new Error(`${field} must resolve inside .ai/shared`);
+      }
+
+      let realSourcePath;
+      let source;
+      try {
+        realSourcePath = fs.realpathSync(sourcePath);
+        source = fs.statSync(realSourcePath);
+      } catch {
+        throw new Error(`${field} references a missing shared file: ${entry}`);
+      }
+      if (!realSourcePath.startsWith(sharedPrefix)) {
+        throw new Error(`${field} must resolve inside .ai/shared`);
+      }
+      if (!source.isFile()) {
+        throw new Error(`${field} must reference a shared file: ${entry}`);
+      }
+
+      console.log(entry);
+    }
+  ' "$MANIFEST_PATH" "$SHARED_ROOT"
+}
+
 trim_trailing_blank_lines() {
   local target_path="$1"
   local runtime
@@ -465,19 +530,13 @@ compare_dir() {
 # shared Rust lint policy: rustfmt.toml, clippy.toml, deny.toml) via
 # `.ai/manifest.json` "sharedRootFiles". They are copied verbatim from
 # `.ai/shared/` and verified by --check, exactly like .coderabbit.yaml. This is
-# opt-in so repos with stricter local configs are never clobbered. Entries must
-# be repo-relative paths without "..".
+# opt-in so repos with stricter local configs are never clobbered.
 if [ -f "$MANIFEST_PATH" ]; then
+  shared_root_files="$(manifest_shared_root_files)" || exit 1
   while IFS= read -r extra_root_file; do
     [ -n "$extra_root_file" ] || continue
-    case "$extra_root_file" in
-      /* | *..*)
-        echo "error: manifest.sharedRootFiles entry '$extra_root_file' must be a repo-relative path without '..'" >&2
-        exit 1
-        ;;
-    esac
     SHARED_ROOT_FILES+=("$extra_root_file")
-  done < <(manifest_value "manifest.sharedRootFiles ?? []")
+  done <<< "$shared_root_files"
 fi
 
 write_agent_files
