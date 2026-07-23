@@ -461,6 +461,25 @@ compare_dir() {
   fi
 }
 
+# Consumer repos can opt into additional shared root files (for example the
+# shared Rust lint policy: rustfmt.toml, clippy.toml, deny.toml) via
+# `.ai/manifest.json` "sharedRootFiles". They are copied verbatim from
+# `.ai/shared/` and verified by --check, exactly like .coderabbit.yaml. This is
+# opt-in so repos with stricter local configs are never clobbered. Entries must
+# be repo-relative paths without "..".
+if [ -f "$MANIFEST_PATH" ]; then
+  while IFS= read -r extra_root_file; do
+    [ -n "$extra_root_file" ] || continue
+    case "$extra_root_file" in
+      /* | *..*)
+        echo "error: manifest.sharedRootFiles entry '$extra_root_file' must be a repo-relative path without '..'" >&2
+        exit 1
+        ;;
+    esac
+    SHARED_ROOT_FILES+=("$extra_root_file")
+  done < <(manifest_value "manifest.sharedRootFiles ?? []")
+fi
+
 write_agent_files
 write_skill_files
 write_shared_root_files

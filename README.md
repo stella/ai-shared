@@ -75,8 +75,25 @@ placeholder when no skills are present. `.gitkeep`
 files from source directories are ignored and are
 not copied into generated outputs.
 
-The same sync also copies shared root-level automation files, currently
+The same sync also copies shared root-level automation files, always
 `.coderabbit.yaml`, from `.ai/shared/` into the consumer repository root.
+
+Consumer repos can opt into additional shared root files (for example the shared
+Rust lint policy `rustfmt.toml`, `clippy.toml`, and `deny.toml`) by listing them
+in `.ai/manifest.json`:
+
+```json
+{
+  "sharedRootFiles": ["rustfmt.toml", "clippy.toml", "deny.toml"]
+}
+```
+
+Listed files are copied verbatim from `.ai/shared/` into the repo root and
+verified by `--check`, exactly like `.coderabbit.yaml`. Opt-in keeps repos with
+stricter local configs (e.g. a repo that bans wall-clock/RNG access in
+`clippy.toml`) from being overwritten. Entries must be repo-relative paths
+without `..`.
+
 CodeRabbit path filters and guideline files can be extended per repo from
 `.ai/manifest.json`:
 
