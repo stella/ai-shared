@@ -35,6 +35,7 @@ Consumer repositories are expected to use:
 .ai/shared/              # submodule pointing here
 .ai/manifest.json        # selected modules and local AGENTS fragment
 .ai/local/agents.md      # repo-specific AGENTS.md fragment
+.ai/generated-agent-files.txt # generated prompt-file registry
 .ai/local-skills/        # repo-local Codex-style skills
 AGENTS.md                # generated and committed
 CLAUDE.md                # generated shim importing AGENTS.md
@@ -51,7 +52,37 @@ The sync script assembles `AGENTS.md` from:
 1. `.ai/shared/modules/<name>.md`, in `.ai/manifest.json` order
 2. `.ai/local/agents.md`
 
-It also generates `CLAUDE.md` and `GEMINI.md` adapters so the committed root
+Repositories can add directory-specific instructions with `agents.scopes`.
+Each scope generates its own `AGENTS.md`, `CLAUDE.md`, and `GEMINI.md`; agents
+combine those instructions with the root guidance when working in that subtree:
+
+```json
+{
+  "agents": {
+    "title": "Project Guidelines",
+    "modules": ["engineering", "typescript"],
+    "local": ".ai/local/agents.md",
+    "scopes": [
+      {
+        "path": "packages/core",
+        "title": "Core Guidelines",
+        "modules": ["testing"],
+        "local": ".ai/local/core-agents.md"
+      }
+    ]
+  }
+}
+```
+
+Scope paths must name existing repository directories. Modules and local
+fragments are additive to the root instructions, so keep general rules at the
+root and scope only assumptions that apply to one subtree.
+
+The generated `.ai/generated-agent-files.txt` registry lets sync remove a
+scoped prompt after its manifest entry is removed without touching unrelated
+hand-written files. Commit the registry with the generated prompt files.
+
+The script also generates `CLAUDE.md` and `GEMINI.md` adapters so committed
 instructions are immediately usable by multiple coding agents.
 When `.ai/manifest.json` contains an `agents` object, these root prompt files are
 generated even if the module list is empty and the local fragment is absent, so
