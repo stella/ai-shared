@@ -37,8 +37,10 @@
 - Use named constants, not string literals for domain values
 - No direct `document.cookie` assignment
 - Avoid spread in loop accumulators (use `.push()`)
-- If you encounter a pre-existing bug or lint error while working on something else,
-  fix it (separate commit)
+- If you encounter a pre-existing bug or lint error, fix it. Preserve focus through
+  isolation, not omission: use a separate commit when the fix is small and shares the
+  same validation surface; use a separate focused PR when it expands the subsystem,
+  risk, or review burden. Never leave a confirmed defect merely to keep a diff narrow.
 - Orchestrate across model tiers when your harness supports subagents and model
   selection: delegate well-scoped, mechanical, or independently verifiable subtasks
   (edits, searches, refactors, test runs) to a subagent on the cheapest model that

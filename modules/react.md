@@ -1,0 +1,13 @@
+## React
+
+- Put the root or exported component at the top of the file after imports; helper
+  components and types follow below.
+- When React Compiler is enabled, prefer plain React over prophylactic `useMemo`,
+  `useCallback`, and `React.memo`.
+- Clean up legacy memoization gradually when touching a file; do not run broad
+  mechanical removals. Keep manual memoization when a library contract requires
+  referential stability or profiling proves a real benefit.
+- Reserve `Props` for React component props.
+- Reuse React utility types instead of hand-rolling equivalents: for example,
+  `React.PropsWithChildren<P>` for props with children and
+  `React.ComponentProps<"button">` for native element props.

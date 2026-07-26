@@ -81,7 +81,7 @@ printf '%s\n' '{
       },
       {
         "path": "packages/react",
-        "modules": ["frontend-react"],
+        "modules": ["react"],
         "local": ".ai/local/react-agents.md"
       }
     ]
