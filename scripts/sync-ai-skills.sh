@@ -494,7 +494,7 @@ const readModules = (moduleNames, field) => {
   });
 };
 
-const readLocal = (localPath, field) => {
+const readLocal = (localPath, field, required) => {
   if (localPath === undefined) {
     return "";
   }
@@ -502,6 +502,11 @@ const readLocal = (localPath, field) => {
   const normalizedPath = validateRelativePath(localPath, field);
   const sourcePath = resolveInside(repoRoot, normalizedPath, field);
   if (!fs.existsSync(sourcePath)) {
+    if (required) {
+      throw new Error(
+        `${field} references a missing local fragment: ${normalizedPath}`,
+      );
+    }
     return "";
   }
   if (!fs.statSync(sourcePath).isFile()) {
@@ -538,6 +543,7 @@ const definitions = [
     title: normalizeTitle(agents.title, "AGENTS.md", "manifest.agents.title"),
     modules: agents.modules ?? [],
     local: agents.local ?? ".ai/local/agents.md",
+    localRequired: Object.hasOwn(agents, "local"),
     field: "manifest.agents",
   },
 ];
@@ -576,6 +582,7 @@ for (const [index, scope] of scopes.entries()) {
     ),
     modules: scope.modules ?? [],
     local: scope.local,
+    localRequired: Object.hasOwn(scope, "local"),
     field,
   });
 }
@@ -596,7 +603,11 @@ for (const definition of definitions) {
     definition.modules,
     `${definition.field}.modules`,
   );
-  const local = readLocal(definition.local, `${definition.field}.local`);
+  const local = readLocal(
+    definition.local,
+    `${definition.field}.local`,
+    definition.localRequired,
+  );
   if (local.length > 0) {
     sections.push(local);
   }
@@ -717,13 +728,24 @@ const resolvePrompt = (relativePath) => {
   return resolved;
 };
 
+const existingEntry = (targetPath) =>
+  fs.lstatSync(targetPath, { throwIfNoEntry: false });
+
 const desired = readRegistry(sourceRegistry);
 const desiredSet = new Set(desired);
 
 for (const stalePath of readRegistry(targetRegistry)) {
   if (!desiredSet.has(stalePath)) {
     const targetPath = resolvePrompt(stalePath);
-    if (fs.existsSync(targetPath)) {
+    const existing = existingEntry(targetPath);
+    if (existing?.isSymbolicLink()) {
+      fs.rmSync(targetPath);
+    } else if (existing) {
+      if (!existing.isFile()) {
+        throw new Error(
+          `refusing to remove a non-file prompt entry: ${stalePath}`,
+        );
+      }
       const contents = fs.readFileSync(targetPath, "utf8");
       if (!contents.includes(generatedMarker)) {
         throw new Error(
@@ -739,6 +761,14 @@ for (const relativePath of desired) {
   const targetPath = resolvePrompt(relativePath);
   const sourcePath = path.resolve(sourceRoot, relativePath);
   fs.mkdirSync(path.dirname(targetPath), { recursive: true });
+  const existing = existingEntry(targetPath);
+  if (existing?.isSymbolicLink()) {
+    fs.rmSync(targetPath);
+  } else if (existing && !existing.isFile()) {
+    throw new Error(
+      `refusing to overwrite a non-file prompt entry: ${relativePath}`,
+    );
+  }
   fs.copyFileSync(sourcePath, targetPath);
 }
 

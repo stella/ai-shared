@@ -93,8 +93,20 @@ grep -q '# Root rules' "$scoped_consumer/AGENTS.md"
 grep -q '# Core rules' "$scoped_consumer/packages/core/AGENTS.md"
 grep -q '## React' "$scoped_consumer/packages/react/AGENTS.md"
 grep -q '# React rules' "$scoped_consumer/packages/react/AGENTS.md"
+test -f "$scoped_consumer/packages/react/CLAUDE.md"
+test -f "$scoped_consumer/packages/react/GEMINI.md"
 grep -q 'packages/core/AGENTS.md' "$scoped_consumer/.ai/generated-agent-files.txt"
 bash "$SOURCE_ROOT/scripts/sync-ai-skills.sh" --check "$scoped_consumer"
+
+printf '%s\n' 'outside content' > "$TEST_ROOT/outside-prompt.md"
+rm "$scoped_consumer/packages/core/AGENTS.md"
+ln -s "$TEST_ROOT/outside-prompt.md" "$scoped_consumer/packages/core/AGENTS.md"
+run_sync "$scoped_consumer"
+if [ -L "$scoped_consumer/packages/core/AGENTS.md" ]; then
+  echo "error: sync wrote through a symlinked prompt target" >&2
+  exit 1
+fi
+grep -qx 'outside content' "$TEST_ROOT/outside-prompt.md"
 
 printf '%s\n' '{
   "agents": {
@@ -121,6 +133,14 @@ if [ -e "$scoped_consumer/packages/react/AGENTS.md" ]; then
   echo "error: sync did not remove a stale registered scoped prompt" >&2
   exit 1
 fi
+if [ -e "$scoped_consumer/packages/react/CLAUDE.md" ]; then
+  echo "error: sync did not remove a stale scoped Claude shim" >&2
+  exit 1
+fi
+if [ -e "$scoped_consumer/packages/react/GEMINI.md" ]; then
+  echo "error: sync did not remove a stale scoped Gemini shim" >&2
+  exit 1
+fi
 bash "$SOURCE_ROOT/scripts/sync-ai-skills.sh" --check "$scoped_consumer"
 
 invalid_scopes_consumer="$(new_consumer invalid-scopes)"
@@ -143,5 +163,9 @@ expect_failure "$scope_traversal_consumer" 'must be a repo-relative path without
 missing_module_consumer="$(new_consumer missing-module)"
 printf '%s\n' '{"agents":{"modules":["missing"]}}' > "$missing_module_consumer/.ai/manifest.json"
 expect_failure "$missing_module_consumer" "references a missing module"
+
+missing_local_consumer="$(new_consumer missing-local)"
+printf '%s\n' '{"agents":{"local":".ai/local/missing.md"}}' > "$missing_local_consumer/.ai/manifest.json"
+expect_failure "$missing_local_consumer" "references a missing local fragment"
 
 echo "sync-ai validation tests passed."
