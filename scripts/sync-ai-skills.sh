@@ -626,7 +626,7 @@ for (const definition of definitions) {
   );
 
   const claudeContents = definition.path
-    ? `${generatedMarker}\n@AGENTS.md\n`
+    ? `${generatedMarker}\n\n@AGENTS.md\n`
     : [
         "@AGENTS.md",
         "",
@@ -637,7 +637,7 @@ for (const definition of definitions) {
         "",
       ].join("\n");
   const geminiContents = definition.path
-    ? `${generatedMarker}\n@AGENTS.md\n`
+    ? `${generatedMarker}\n\n@AGENTS.md\n`
     : [
         "@AGENTS.md",
         "",
