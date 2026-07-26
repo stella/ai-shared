@@ -124,13 +124,22 @@ bash scripts/test-sync-ai-skills.sh
 bash .ai/shared/scripts/sync-ai-skills.sh .
 ```
 
-Or add a thin wrapper script in the consumer repo:
+Package scripts and workflows should invoke the canonical submodule script directly.
+Do not keep a wrapper copy in the consumer repository:
 
-```bash
-#!/usr/bin/env bash
-set -euo pipefail
-bash .ai/shared/scripts/sync-ai-skills.sh "$@" .
+```json
+{
+  "scripts": {
+    "sync-ai": "bash .ai/shared/scripts/sync-ai-skills.sh .",
+    "sync-ai:check": "bash .ai/shared/scripts/sync-ai-skills.sh --check ."
+  }
+}
 ```
+
+Keep `.ai/shared` pinned to a reviewed commit. A scheduled consumer workflow can call
+`stella/.github/.github/workflows/ai-shared-update.yml` to propose fast-forward
+submodule and generated-file updates in a pull request; never fetch a floating shared
+revision during normal CI.
 
 To link generated agent skills into Codex's global skill directory:
 
