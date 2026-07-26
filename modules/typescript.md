@@ -6,6 +6,11 @@
 - Model mutually exclusive internal states as discriminated unions with a stable
   `type`, `status`, or domain-specific discriminator. Avoid boolean flag sets plus
   optional payload fields when only some combinations are valid.
+- Construct a discriminated-union branch transition explicitly: list the target
+  branch's fields rather than spreading the previous object and overriding the
+  discriminator, so stale fields from the old branch cannot leak through the spread.
+  Read a union with a `switch` plus a `never` exhaustiveness check over an `if`/`else`
+  chain.
 - When the linter blocks an `as` cast, restructure to narrow properly (type guards,
   `in` checks, records instead of arrays). If truly unavoidable, ask before adding and
   include a `// SAFETY:` comment explaining why the cast is sound.

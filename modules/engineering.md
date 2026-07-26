@@ -2,7 +2,9 @@
 
 - Never manually reformat code you did not semantically change (auto-formatter output
   from `bun run format` is fine to include)
-- Vary punctuation: prefer colons, semicolons, commas, and parentheses over em dashes
+- In prose, vary punctuation: prefer colons, semicolons, commas, and parentheses
+  over em dashes. This does not apply to source code, command syntax, generated
+  content, or exact identifiers.
 - Omit needless words. Vigorous writing is concise: a sentence should contain no
   unnecessary words, a paragraph no unnecessary sentences, for the same reason that a
   drawing should have no unnecessary lines and a machine no unnecessary parts. Applies
@@ -13,6 +15,14 @@
 - If TypeScript can make a class of bug structurally impossible (branded types,
   discriminated unions, exhaustive checks), prefer that over runtime validation or
   manual discipline
+- Kill the bug class, not the instance: for a recurring or systemic defect, use the
+  strongest applicable mechanism. Make invalid states unrepresentable first; cover
+  remaining behavior with a property, invariant, idempotence, or fixed-point test over
+  the input class. Enforce boundaries with a lint rule or CI check. Keep a minimal
+  example regression only when the broader invariant cannot express the failure. When
+  correctness depends on a helper being called at every call site, enforce it with a
+  custom lint rule, not developer discipline. Do not over-apply this to genuine
+  heuristics (a debounce timer is not a bug class).
 - Avoid boolean fields for states that may grow. Use a named discriminator or
   domain type for values that answer "which kind/status/mode/type?" rather than
   a permanent yes/no question; a two-value union, enum, or equivalent domain type
