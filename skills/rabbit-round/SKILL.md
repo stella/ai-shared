@@ -1,79 +1,76 @@
 ---
 name: rabbit-round
-description: "Process automated PR review comments systematically. Use this for CodeRabbit, Gemini, GitHub Copilot, Devin, Greptile, and similar bots."
+description: "Process one evidence-backed round of automated pull-request review comments from CodeRabbit, Gemini, Copilot, Devin, Greptile, and similar bots."
 ---
 
 # Rabbit Round
 
-Process automated PR review comments systematically. Use this for
-CodeRabbit, Gemini, GitHub Copilot, Devin, Greptile, and similar bots.
+Process one round of automated review feedback. Use `/finish-pr` when the user
+wants repeated monitoring until a pull request converges.
 
-## Instructions
+## 1. Capture the Review State
 
-1. **Get context**:
+Resolve the repository, PR, current head SHA, requester identity, draft state,
+and applicable comment-attribution rules. Fail visibly if the PR cannot be
+identified.
 
-   ```bash
-   PR_NUMBER=$(gh pr view --json number -q '.number')
-   gh api user --jq '.login'
-   git rev-parse HEAD
-   ```
+Fetch paginated review threads through GitHub GraphQL so unresolved state and
+thread replies are preserved. Fetch top-level issue comments separately. Filter
+known bot accounts without treating humans as bots. Record which comments apply
+to the current head and which are stale.
 
-2. **Fetch review comments** from the PR:
+Do not rely only on the REST review-comments list: it does not represent thread
+resolution or the complete conversation reliably.
 
-   ```bash
-   gh api repos/{owner}/{repo}/pulls/"$PR_NUMBER"/comments --paginate
-   ```
+## 2. Triage Every Actionable Bot Thread
 
-   Filter for known bot accounts. Do not treat human review comments as bot comments.
+Classify each unresolved bot thread:
 
-3. **Triage each bot comment**:
-   - **Accept** if it improves correctness, safety, maintainability, or follows repo conventions.
-   - **Push back** if it is incorrect, overreaching, or conflicts with documented conventions.
+- **Accept**: correct and improves safety, behavior, tests, or maintainability.
+- **Accept with adjustment**: the concern is valid but the proposed fix conflicts
+  with repository structure or a stronger invariant.
+- **Already addressed**: current code or a pushed commit demonstrably resolves it.
+- **Push back**: incorrect, stale, speculative, or contrary to documented
+  constraints.
 
-4. **Implement accepted suggestions**:
-   - make the code changes
-   - group related fixes logically
-   - run the relevant project checks
+Read the cited code and applicable instructions before deciding. Treat security,
+authorization, data loss, and compatibility claims as hypotheses to verify, not
+as votes to accept automatically. Never modify or resolve human review threads.
 
-5. **Reply inline** to each bot comment:
+## 3. Implement Before Replying
 
-   ```bash
-   COMMENT_ID="123456789"
-   gh api -X POST repos/{owner}/{repo}/pulls/"$PR_NUMBER"/comments/"$COMMENT_ID"/replies \
-     -f body="[response]"
-   ```
+Apply accepted changes, including tests when they cover a real failure mode. Run
+focused checks while iterating and the repository's canonical affected-change or
+CI-equivalent verification before publication when practical.
 
-   Good response patterns:
-   - accepted and implemented
-   - agreed, implemented with a small adjustment
-   - already addressed in commit `{hash}`
-   - pushing back, with a concrete reason and source or repo convention
+Commit and push the implementation before saying it is fixed. Push a new branch
+normally; use `--force-with-lease` only after intentionally rebasing a published
+branch. Capture the resulting head SHA.
 
-6. **Never resolve human review threads**. For bot threads, resolve only after:
-   - the change is implemented, or
-   - the pushback is clearly documented
+## 4. Reply With Verifiable Evidence
 
-7. **Check nit-level comments too**. Small ones still matter if they improve clarity
-   or remove avoidable friction.
+Reply inline to each handled bot thread. Keep responses short and factual:
 
-8. **Commit and push** if you made changes:
-   - use a neutral commit message such as `fix: address review comments`
-   - push to the active PR branch
+- implemented in `<sha>` with the relevant behavior
+- implemented with an adjustment and why
+- already addressed, with the code or commit that proves it
+- not changing, with a concrete repository constraint or technical reason
 
-## Decision Guidelines
+Follow repository attribution rules for GitHub comments. Do not claim a check
+passed unless it ran successfully on the reported head.
 
-**Accept when the suggestion:**
+After replying, resolve only bot-authored threads that are implemented, already
+addressed, or answered with a supported pushback. Leave human threads and any
+uncertain bot thread open. Do not minimize summary comments by default.
 
-- fixes a bug or real edge case
-- improves type safety
-- adds missing tests
-- aligns with existing repo patterns
-- tightens security or validation appropriately
+## 5. Recheck the Current Head
 
-**Push back when the suggestion:**
+Refresh the PR after the push and report one status:
 
-- assumes facts not true in this codebase
-- conflicts with canonical specs or official sources
-- adds complexity for little benefit
-- would undo a deliberate, documented decision
-- is purely stylistic and inconsistent with the repo
+- `clean`: no actionable bot thread remains and current-head checks are green
+- `pending_bots`: current-head bot review or checks are still running
+- `needs_changes`: actionable feedback remains
+- `failing_ci`: a current-head required check failed
+
+Preserve the PR's explicit draft state. This skill performs one pass; it does not
+schedule polling, merge, deploy, or bypass protections.

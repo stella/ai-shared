@@ -1,199 +1,127 @@
 ---
 name: update-deps
-description: "Review and update third-party dependencies. Use this when asked to upgrade packages, survey new minor or major releases for useful features, assess whether a repository can adopt them, or validate whether a release looks suspicious before bumping it."
+description: "Inventory, assess, update, and validate third-party dependencies across Bun, Cargo, Docker, and GitHub Actions without hiding ecosystem or supply-chain risk."
 ---
 
 # Update Dependencies
 
-Review and update third-party dependencies. Use this when asked
-to upgrade packages, survey new minor or major releases for
-useful features, assess whether a repository can adopt them, or
-validate whether a release looks suspicious before bumping it.
+Review or update the dependency scope requested by the user. Discover the
+repository's actual manifests and source-of-truth files before running ecosystem
+commands; do not assume they live at the root.
 
-## Scope
+## 1. Resolve Scope and Sources of Truth
 
-Default to Bun packages, Cargo crates, and Docker base images.
-Expand to GitHub Actions when the request mentions them or the
-affected files live in `.github/`.
+Inspect repository instructions, workspace manifests, lockfiles, dependency
+catalogs or resolutions, automated update configuration, and open dependency PRs
+when relevant. Common sources include:
 
-Stella repositories may already have automated controls such as:
+- `package.json`, workspace manifests, `bun.lock`, and `bunfig.toml`
+- every relevant `Cargo.toml` and its `Cargo.lock`
+- `Dockerfile*` and Compose YAML
+- `.github/workflows/*` and dependency-update configuration
 
-- `bunfig.toml` minimum release age rules
-- dependency review workflows for license and vulnerability checks
-- SBOM or provenance workflows that regenerate dependency artifacts
+Default to an inventory and recommendation unless the user asks to apply updates.
+When applying a broad sweep, split it into coherent, independently validated
+batches. Keep breaking majors separate from routine updates.
 
-Do not duplicate those checks manually unless the user asks for
-an audit or the automation looks stale or broken.
+## 2. Inventory the Full Requested Surface
 
-## Arguments
+Run Bun inventory from the workspace root:
 
-`$ARGUMENTS` should describe the dependency scope, desired risk
-level, and whether to actually apply changes or only prepare a
-recommendation.
+```bash
+bun outdated --filter="*"
+```
 
-Helpful extras when available:
+For each relevant Rust manifest, inspect the full dependency graph:
 
-- package names, ecosystem, or files
-- patch-only, minor, major, or mixed
-- whether to optimize for new features, risk reduction, or
-  vulnerability remediation
+```bash
+cargo outdated --manifest-path <path/to/Cargo.toml>
+```
 
-If the request is vague, default to:
+If `cargo-outdated` is unavailable, use:
 
-1. all outdated dependencies in scope
-2. coherent ecosystem-sized batches
-3. one commit per validated batch
+```bash
+cargo update --manifest-path <path/to/Cargo.toml> --dry-run
+```
 
-## Instructions
+Add targeted `cargo search` or `cargo info` only where the dry run is ambiguous.
+Do not default to `--root-deps-only`: transitive changes can carry the material
+risk.
 
-1. **Establish the version source of truth**:
-   - root `package.json` `catalog`, `catalogs`, and `resolutions`
-   - workspace `package.json` files
-   - `bun.lock`
-   - `Cargo.toml` and `Cargo.lock`
-   - `.github/dependabot.yml` for grouping expectations
-   - `.github/workflows/*.yml` for GitHub Action pins
-   - Dockerfiles and base image digests
+Inventory container references across Dockerfiles and Compose files:
 
-2. **Inventory outdated candidates**:
-   - run `bun outdated --filter="*"` for Bun workspace packages
-   - run `cargo outdated --root-deps-only` for Cargo crates. If
-     `cargo-outdated` is missing, prefer `cargo binstall
-cargo-outdated` when available (prebuilt binary, seconds)
-     over `cargo install cargo-outdated` (compiles from source,
-     several minutes). As a fallback, use `cargo update --dry-run`
-     plus targeted `cargo search` / `cargo info` checks
-   - flag prerelease-pinned deps separately. `bun outdated` reports
-     the latest version allowed by the declared requirement as
-     `Update` and the registry's `latest` release as `Latest`.
-     Exact prerelease pins, and ranges that exclude newer releases
-     from the intended prerelease channel (`alpha`, `beta`, `rc`,
-     `next`, `canary`, `dev`), can therefore show no applicable
-     update even when that channel has advanced. Grep manifests and
-     catalogs for prerelease versions and non-`latest` tags, then
-     compare each one with `npm view <pkg> dist-tags` and the
-     intended channel's version. A `bunfig.toml`
-     `minimumReleaseAgeExcludes` entry is a strong hint that a
-     package is deliberately tracked ahead of stable.
-   - inspect open dependency PRs if the request is about triage
-     rather than local edits
-   - include GitHub Actions only when the request covers them
+```bash
+rg -n '^\s*(FROM|image:)\s+' \
+  --glob 'Dockerfile*' \
+  --glob '*compose*.yml' \
+  --glob '*compose*.yaml' \
+  --glob '!node_modules/**'
+```
 
-3. **Plan the full sweep, then batch it**:
-   - cover all outdated dependencies in the requested scope, not
-     just the first safe batch
-   - split the work into coherent ecosystem or library-family
-     batches
-   - follow existing Dependabot grouping where possible
-   - avoid mixing high-risk majors with routine minors in the
-     same commit
-   - use one commit per validated batch so rollback stays easy
+Resolve current tags and digests from authoritative registry metadata. Inspect
+GitHub Actions when requested or when workflow files are in scope.
 
-4. **Classify upgrade risk before touching code**:
-   - patch: usually lowest risk
-   - minor: check new features and silent behavior changes
-   - major: assume migration work
-   - `0.x` minor: treat as potentially breaking
-   - prerelease (`beta`, `rc`, etc.): unstable channel; assume
-     breaking changes can land between any two prerelease builds,
-     so read the diff and validate even for a "small" bump
+Flag exact prerelease pins and non-stable channels separately. Package-manager
+"latest" output can miss a newer alpha, beta, rc, next, canary, or dev release on
+the intended channel. Query registry tags and compare the deliberate channel.
 
-5. **Read official upgrade sources**:
-   - changelog or release notes
-   - migration guide
-   - breaking changes
-   - peer dependency, engine, runtime, and module-format changes
+## 3. Assess Upgrade and Supply-Chain Risk
 
-   Prefer official docs, releases, and package metadata over blog
-   posts or third-party summaries.
+Treat patch, minor, major, pre-1.0 minor, and prerelease moves according to their
+actual compatibility risk. Read official release notes, migration guides, engine
+or peer requirements, image notes, and package metadata. Search current usage for
+deprecated APIs, compatibility shims, and workarounds the release could remove.
 
-6. **Scan the codebase for adoption opportunities**:
-   - search current usage with `rg`
-   - look for deprecated APIs, local workarounds, compatibility
-     shims, TODOs, or comments the new release could remove
-   - if a new version unlocks a better pattern, identify the
-     concrete files that could adopt it now
+Before adopting a fresh or high-risk release, inspect cheap signals first:
 
-7. **Check suspicious-release signals before adopting a fresh version**:
-   - start with cheap metadata checks first
-   - release age relative to repository quarantine rules
-   - publisher, maintainer, repository, or homepage change
-   - missing or unusual git tag or release notes
-   - new `preinstall`, `install`, `postinstall`, or `prepare`
-     scripts
-   - new native binaries or bundled blobs
+- release age relative to repository quarantine policy
+- publisher, maintainer, repository, or homepage changes
+- missing tags or unexplained release notes
+- new lifecycle scripts, native binaries, or bundled blobs
+- image provenance, supported platforms, and digest movement
 
-   Only escalate to tarball and file-tree inspection when the
-   metadata looks odd, the package is high risk, or the user
-   explicitly wants a supply-chain review. That deeper pass can
-   cover:
-   - sudden tarball size or file-tree jump
-   - obfuscated files
-   - package contents that differ materially from prior releases
-     without explanation
+Use package tarball or image-layer inspection only when those signals are odd, the
+dependency is high risk, or the user requested a deeper audit. Prefer official
+sources and registry metadata over third-party summaries.
 
-   Good defaults:
+## 4. Apply Deliberate Updates
 
-   ```bash
-   npm view <pkg>@<version> --json
-   bun pm untrusted
-   ```
+Update the real source of truth: a shared catalog or resolution before duplicating
+versions across workspaces. Preserve the intended prerelease channel explicitly;
+do not use a flag that silently replaces it with stable latest.
 
-   Use tarball inspection when the metadata looks odd or the
-   release is high risk.
+For Rust, use targeted lockfile updates:
 
-8. **Apply the change at the real source of truth**:
-   - prefer root `catalog`, `catalogs`, or `resolutions` updates
-     over per-workspace drift
-   - update GitHub Actions by commit SHA, not floating tags
-   - keep Docker images pinned by digest
-   - for Cargo, prefer `cargo update -p <crate>` when the
-     existing semver range already covers the new version; edit
-     `Cargo.toml` only when bumping past the range
-   - ordinary `bun update` respects the declared requirement, but
-     `bun update --latest` ignores it and can replace an exact
-     prerelease pin or non-`latest` tag with the registry's
-     `latest` release while rewriting the manifest. Use `--latest`
-     only when that channel change is intentional. To remain on a
-     prerelease channel, resolve the target explicitly (for example,
-     `npm view <pkg>@<tag> version`), edit the real source of truth
-     to that exact prerelease or deliberate tag. Then run `bun install`
-   - after each batch passes validation, commit that batch before
-     moving to the next one
+```bash
+cargo update --manifest-path <path/to/Cargo.toml> -p <crate>
+```
 
-9. **Review the lockfile delta**:
-   - use `bun update`, or edit manifests and run `bun install`
-   - for Cargo, run `cargo update` and read the `Cargo.lock` diff
-     the same way (unexpected transitive additions or replacements)
-   - read the `bun.lock` diff for unexpected transitive additions,
-     dependency replacement, or new script-bearing packages
-   - if the new tree introduces untrusted packages with scripts,
-     inspect them before trusting anything
+Edit the manifest only when the declared requirement must change. Do not run bare
+`cargo update` for an ordinary batch; a full-graph update must be an explicit,
+reviewed choice.
 
-10. **Validate in layers**:
-    - run the smallest focused checks for the affected ecosystem
-      first
-    - then run repo checks relevant to the touched surfaces
-    - for Bun package updates, default to `bun run lint`, `bun run
-typecheck`, and the relevant tests
-    - for Cargo updates, run `cargo check` and `cargo test` when
-      crates touch logic, not just deps
-    - verify generated artifacts explicitly when the upgraded
-      dependency affects them
+Pin GitHub Actions to commit SHAs and container images to immutable digests when
+that is repository policy. Review every manifest and lockfile delta for unexpected
+transitive additions, replacements, features, scripts, or platform changes.
 
-11. **Prefer removal and consolidation over passive growth**:
-    - if the upgrade makes a local helper, polyfill, or wrapper
-      obsolete, remove it
-    - if several packages now overlap, prefer the one already
-      aligned with the codebase
+Prefer removal over passive growth: delete obsolete shims, polyfills, or duplicate
+packages when the upgrade makes them unnecessary and the validation surface remains
+focused.
 
-12. **Report back with**:
-    - the full batch plan
-    - current and target versions
-    - risk level
-    - why the upgrade is worth taking now
-    - concrete adoption opportunities found in the codebase
-    - suspicious-release assessment
-    - validation run
-    - commit created for each completed batch
-    - follow-up work for deferred or blocked majors
+## 5. Validate and Report
+
+Run the smallest affected checks first, then the repository's canonical
+verification for the touched surface. Use each Rust command with its actual
+manifest path, for example:
+
+```bash
+cargo check --manifest-path <path/to/Cargo.toml>
+cargo test --manifest-path <path/to/Cargo.toml>
+```
+
+Verify generated artifacts when a dependency affects them. If applying multiple
+batches, commit each only after its validation passes so rollback remains clear.
+
+Report the full inventory, current and target versions, risk classification,
+official migration evidence, concrete adoption opportunities, supply-chain
+assessment, applied batches, checks run, and deferred or blocked work.

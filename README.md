@@ -193,6 +193,7 @@ unprefixed global names.
 
 ## Current Shared Commands
 
+- `finish-pr` — drive a pull request to a converged review state
 - `rabbit-round` — handle bot PR reviews systematically
 - `open-pr` — open a clean, verified pull request from the current branch
 - `plan` — create implementation plans using the shared `.agents/plans/` convention

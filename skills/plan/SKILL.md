@@ -1,100 +1,102 @@
 ---
 name: plan
-description: "Create a new implementation plan in the repo's planning area."
+description: "Create a concise, evidence-backed implementation plan in the repository planning area when the user explicitly asks for a plan."
 ---
 
-# Create Plan
+# Plan
 
-Create a new implementation plan in the repo's planning area.
+Create an implementation plan only when the user explicitly requests one. A
+plan records decisions and executable slices; it is not a substitute for
+inspecting the repository.
 
-## Arguments
+## 1. Establish the Planning Context
 
-$ARGUMENTS — A short slug for the plan, ideally kebab-case. If empty,
-derive a reasonable slug from the task.
+Read applicable repository instructions and the existing planning system.
+Prefer the repository's established location and format. When present, inspect:
 
-## Conventions
+- `.agents/ARCHITECTURE.md`
+- `.agents/GOALS.md`
+- `.agents/STATUS.md`
+- recent related plans
+- the code, tests, schemas, and configuration the task would change
 
-Prefer this shared planning layout when the repo supports it:
+Use `$ARGUMENTS` as a short slug when provided; otherwise derive one from the
+task.
+
+Do not create a second planning system. Use `.agents/plans/` only when it is
+already established or the repository clearly adopts the shared convention.
+
+## 2. Resolve Decisions With Evidence
+
+Trace the current behavior through real entry points and boundaries. Record
+facts separately from proposals. Ask about a materially different product,
+security, migration, or compatibility choice only when repository evidence
+cannot resolve it. Do not pause for discoverable implementation details.
+
+Prefer vertical slices that leave the repository working after each slice.
+Identify ownership boundaries, data contracts, invalid states, rollout risks,
+and generated artifacts explicitly.
+
+## 3. Create a Collision-Safe File
+
+Follow the repository's existing naming scheme when one exists and is safe for
+concurrent worktrees. Otherwise use:
 
 ```text
-.agents/ARCHITECTURE.md
-.agents/GOALS.md
-.agents/STATUS.md
-.agents/plans/
+YYYYMMDD-HHMMSS-<slug>-<short-unique-suffix>.md
 ```
 
-If the repo uses a different planning area, adapt to it rather than
-creating duplicate systems.
+Use UTC for the timestamp. Create the file exclusively and retry with a new
+suffix on collision. Never overwrite an existing plan. Do not derive a global
+sequential number from a directory listing: concurrent worktrees can choose the
+same number.
 
-## Instructions
+## 4. Write the Plan
 
-1. **Read planning context**:
-   - `.agents/ARCHITECTURE.md` if present
-   - `.agents/GOALS.md` if present
-   - recent related plans if present
+Use only sections that carry information:
 
-2. **Determine the plan location**:
-   - prefer `.agents/plans/`
-   - if that directory does not exist, create it only if the repo is
-     clearly adopting the shared planning convention
-   - otherwise ask or use the repo's existing planning area
+```markdown
+# Plan: [Feature]
 
-3. **Determine the next plan number**:
+## Goal
 
-   ```bash
-   ls .agents/plans/
-   ```
+What outcome changes, for whom, and why.
 
-   Use the next sequential number when numbered plans are already in use.
-   If the repo does not number plans, follow its established naming.
+## Current State
 
-4. **Research before writing**:
-   - inspect the existing code
-   - read the relevant modules
-   - understand constraints, patterns, and likely blast radius
+Relevant behavior, entry points, constraints, and evidence.
 
-5. **Write the plan** with this structure:
+## Decisions
 
-   ```markdown
-   # Plan: [Feature Name]
+- **Decision**: choice and rationale.
 
-   Date: YYYY-MM-DD
+## Scope
 
-   ## Goal
+In scope and intentionally out of scope.
 
-   What are we building and why?
+## Vertical Slices
 
-   ## Design Decisions
+1. End-to-end slice with real files, boundaries, and a verifiable outcome.
 
-   - **Decision**: Why this approach over alternatives.
+## Contracts and Invariants
 
-   ## Scope
+Types, schemas, authorization, compatibility, idempotency, and failure behavior.
 
-   **In scope:**
+## Verification
 
-   - ...
+Focused checks, integration coverage, and observable acceptance criteria.
 
-   **Out of scope:**
+## Rollout and Recovery
 
-   - ...
+Migration, sequencing, monitoring, rollback, or "Not applicable".
 
-   ## Implementation
+## Open Questions
 
-   - `path/to/file` — what changes here
+Only unresolved decisions that can change the plan.
+```
 
-   ## Test Cases
+Name concrete files and symbols where repository evidence supports them. Avoid
+pseudocode unless a contract would otherwise remain ambiguous. Keep the plan
+concise enough to stay useful during implementation.
 
-   What needs to be verified.
-
-   ## Open Questions
-
-   Any unresolved decisions.
-   ```
-
-6. **Plan well, do not over-specify**:
-   - focus on _what_ and _why_
-   - avoid locking in incidental implementation details too early
-   - call out migrations, security implications, and rollout risk when relevant
-
-7. **Confirm before finalizing** if the user is still shaping the task.
-   If they asked you to just create the plan, go ahead and write it.
+Report the created path and any decision that still needs the user.
