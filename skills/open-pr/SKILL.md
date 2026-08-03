@@ -1,129 +1,120 @@
 ---
 name: open-pr
-description: "Prepare the current worktree branch for a pull request: rebase, self-review, quality checks, and open a draft PR."
+description: "Prepare the current change or stack for review: isolate it, rebase, self-review, run proportionate repository checks, push safely, and open or update the pull request."
 ---
 
 # Open PR
 
-Prepare the current worktree branch for a pull request: rebase,
-self-review, quality checks, and open a draft PR.
+Prepare the current change or stack for review without disturbing unrelated
+work.
 
-## Instructions
+## 1. Resolve Scope and Isolation
 
-1. **Verify you are on an isolated feature branch**:
+Inspect the branch, worktree, status, remotes, applicable repository
+instructions, and existing PR before changing history:
 
-   ```bash
-   CURRENT=$(git branch --show-current)
-   if [ -z "$CURRENT" ] || [ "$CURRENT" = "main" ] || [ "$CURRENT" = "master" ]; then
-     echo "Error: /open-pr must run from an active feature branch."
-     exit 1
-   fi
-   ```
+```bash
+git branch --show-current
+git status --short
+gh pr list --head "$(git branch --show-current)" --state all \
+  --json number,state,isDraft,headRefName,baseRefName,url
+```
 
-   If on a default branch or detached HEAD, abort and ask the
-   user which feature branch to use.
+An empty PR list means no PR exists. Authentication, network, or repository
+errors must remain visible and stop the workflow before history changes or
+publication.
 
-   Check whether the current checkout is safe to use for PR prep:
+Never prepare a PR in a dirty shared checkout. If the checkout is on the
+default branch, detached, has unrelated changes, or spans repositories or
+submodules, move the intended work to a clean worktree with a concise inferred
+branch name. Transfer only owned commits or hunks; do not stash, reset, or
+silently include unrelated files. Ask only when ownership cannot be determined
+safely.
 
-   ```bash
-   git status --short
-   ```
+Follow the repository's rerere policy. Review every replayed conflict
+resolution before continuing.
 
-   If the checkout is the user's shared root checkout, has
-   unrelated local changes, or the work spans multiple repos or
-   submodules, stop and move to clean worktree(s) before rebasing
-   or committing. Create the worktree from the current feature
-   branch and continue the rest of this skill there; do not
-   rewrite history in the dirty root checkout.
+## 2. Bootstrap Before Trusting Failures
 
-2. **Bootstrap the worktree before trusting failures**:
+Confirm the repository toolchain, dependencies, submodules, generated sources,
+and expected environment links exist in the isolated worktree. Run the normal
+setup flow when they do not, then retry the same check. Missing tools or modules
+are not product regressions. Keep setup-only lockfile or generated churn out of
+the PR.
 
-   Before running lint, typecheck, tests, or hooks, verify that
-   the worktree actually has the repo toolchain available
-   (`bun`, workspace dependencies, `turbo`, `oxlint`, project
-   bins, and env links if the repo expects them).
+## 3. Rebase the Correct Layer
 
-   If the worktree is missing the toolchain, run the repo's
-   normal install/setup flow first, then rerun the same command.
-   Do not treat missing-bin or module-resolution failures as
-   product-code regressions. Keep setup-only churn such as
-   accidental lockfile changes out of the PR unless the task
-   explicitly requires them.
+Resolve the remote default branch rather than assuming its name. Check
+`gh extension list` before invoking the optional `github/gh-stack` extension.
+If it is installed and `gh stack view` identifies a stack, use
+`gh stack rebase` and review each layer against its parent. If the extension is
+absent or the branch is not stacked, use ordinary Git; do not install an
+optional extension merely to prepare a normal PR:
 
-3. **Rebase onto the remote default branch**:
+```bash
+DEFAULT_BRANCH="$(git symbolic-ref --short refs/remotes/origin/HEAD 2>/dev/null | sed 's@^origin/@@')"
+if [ -z "$DEFAULT_BRANCH" ]; then
+  DEFAULT_BRANCH="$(gh repo view --json defaultBranchRef --jq '.defaultBranchRef.name')"
+fi
+git fetch origin "$DEFAULT_BRANCH"
+git rebase "origin/$DEFAULT_BRANCH"
+```
 
-   ```bash
-   DEFAULT_BRANCH="$(git symbolic-ref --short refs/remotes/origin/HEAD 2>/dev/null | sed 's@^origin/@@')"
-   if [ -z "$DEFAULT_BRANCH" ]; then
-     DEFAULT_BRANCH="$(gh repo view --json defaultBranchRef --jq '.defaultBranchRef.name' 2>/dev/null)"
-   fi
-   if [ -z "$DEFAULT_BRANCH" ]; then
-     DEFAULT_BRANCH="main"
-   fi
+Resolve deterministic conflicts directly. Ask when competing resolutions
+would change behavior or discard work whose ownership is unclear.
 
-   git fetch origin "$DEFAULT_BRANCH"
-   git rebase "origin/$DEFAULT_BRANCH"
-   ```
+## 4. Review the Actual Change
 
-   If conflicts arise, resolve them. After resolving, continue
-   the rebase. If a conflict is ambiguous, ask the user.
+Read applicable instruction files, then inspect the complete semantic diff and
+changed canonical sources. For generated artifacts, review their source in full
+and inspect the generated delta for drift; do not reread large mechanical
+copies.
 
-4. **Self-review against CLAUDE.md conventions**:
+Check for accidental files, invalid states, authorization and disclosure
+boundaries, missing generated/i18n synchronization, migration compatibility,
+performance, replay safety, and tests that cover real failure modes. Fix
+confirmed defects before publishing.
 
-   Get the full diff against the default branch:
+## 5. Run Proportionate Checks
 
-   ```bash
-   git diff "origin/$DEFAULT_BRANCH" --name-only
-   ```
+Use the repository's canonical verification command for code changes. Start
+with focused checks while iterating, then run the CI-equivalent command before
+push when the task and machine allow it.
 
-   Read every changed file in full. Review against the
-   conventions in CLAUDE.md (TypeScript strictness, error
-   handling, security, naming, i18n, patterns). Fix any
-   violations directly; don't just list them. Commit fixes
-   separately with `fix: address self-review findings`.
+For documentation or skill-only changes, run their owning generators and
+validators, formatting verification, and `git diff --check`; do not run
+unrelated application suites as ritual. Let pre-push hooks run their affected
+gates.
 
-5. **Run quality checks using the repo's actual commands**:
+Honor explicit constraints on heavy local checks. Record what was skipped and
+rely on CI rather than silently invoking equivalent work another way.
 
-   Run the checks the repository already defines for linting,
-   typechecking, tests, and non-mutating format verification.
-   If the repo defines `format:check`, use it. If it only
-   defines a mutating `format` script, do not run it as
-   verification unless you also commit the formatter output.
-   Prefer documenting a missing format check in the PR body over
-   inventing a one-off command that is inconsistent with the repo.
+## 6. Apply Security Review by Risk
 
-   If any check fails, fix the issue and re-run. Commit fixes
-   with `fix: lint/format/type errors`.
+Always inspect for secrets, private identifiers, unsafe public wording, and
+local paths. Run the repository security-audit workflow when the change touches
+a security boundary or the user requests it. Fix validated in-scope high-risk
+findings before publication and follow the repository's public-disclosure
+policy.
 
-6. **Security audit**:
+## 7. Commit and Push Safely
 
-   Run `/security-audit`. Fix any critical or high findings
-   in files changed in this PR before opening it.
-   Commit fixes with `fix: address security audit findings`.
+Use focused commits that follow repository conventions. Push a new branch
+normally. Use `--force-with-lease`, never plain force, only after intentionally
+rebasing a published branch. For a stack, submit every layer and verify each PR
+targets its parent.
 
-7. **Open the PR as draft**:
+## 8. Open or Update Review State
 
-   Push the branch and create the PR as a **draft**:
+- An explicit draft request creates or preserves a draft.
+- An ordinary request to open a complete PR creates it ready for review.
+- Keep a PR draft only when requested or when the change is knowingly
+  incomplete; state the reason.
 
-   ```bash
-   git push --force-with-lease -u origin HEAD
-   gh pr create --fill --draft
-   ```
+Write a concise title and body describing only the visible implementation.
+Follow repository rules for attribution and public context. Do not add a test
+plan unless requested.
 
-   If `--fill` produces a poor title/body, write a proper one
-   following Conventional Commits (`feat:`, `fix:`, etc.) with
-   a very concise summary. Do not add a separate test plan unless
-   the user explicitly asks for one. Do not mention deployment
-   choices or attribute the motivation for the PR to a specific
-   person's feedback, request, or experience.
-
-   This repository is public. Never include marketing language,
-   internal business context, pricing, competitive analysis,
-   user identities, conversation specifics, deployment specifics,
-   or security architecture beyond what the diff obviously shows.
-   Do not add details that would help a motivated attacker exploit
-   the code, especially a vulnerable previous version being fixed.
-   Assume the PR may be read by hostile adversaries, not only
-   friendly collaborators. When sensitive context would improve
-   readability, omit it by default; ask the user only if omission
-   would make the PR hard to review.
+Report the URL, readiness, checks run or skipped, and any blocker. Do not begin
+bot monitoring, merge, or deployment unless the user requested that broader
+workflow.
