@@ -23,6 +23,12 @@
   correctness depends on a helper being called at every call site, enforce it with a
   custom lint rule, not developer discipline. Do not over-apply this to genuine
   heuristics (a debounce timer is not a bug class).
+- Silent drift is a bug class: when structure X must mirror structure Y (a
+  projection map mirroring handler payloads, a frontend list mirroring backend
+  classifications, a fixture mirroring a real schema), derive one side from the
+  other or bind them with a compile-time check; never rely on discipline or a
+  hand-updated mirror test. A lookup whose miss means a bug must panic or emit
+  telemetry, never fall back silently to a default.
 - Avoid boolean fields for states that may grow. Use a named discriminator or
   domain type for values that answer "which kind/status/mode/type?" rather than
   a permanent yes/no question; a two-value union, enum, or equivalent domain type
