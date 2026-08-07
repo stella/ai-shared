@@ -24,6 +24,19 @@ Default to an inventory and recommendation unless the user asks to apply updates
 When applying a broad sweep, split it into coherent, independently validated
 batches. Keep breaking majors separate from routine updates.
 
+"Separate" means its own batch and commit, not its own pull request and not
+omitted. An applied sweep covers every update the registry offers, majors and
+prerelease-channel moves included. The only reason to leave a version behind is
+a mechanical block: a release still inside the repository's release-age
+quarantine, a peer or engine constraint that cannot be satisfied, or an upstream
+break with no migration path. Report each block with its reason. Upgrade size,
+review burden, and "risky major" are not blocks; land those in their own
+validated batch and describe the migration.
+
+For every major and heavy minor, read the release notes for capabilities worth
+adopting, not only for breakage, and report those opportunities with the version
+moves.
+
 ## 2. Inventory the Full Requested Surface
 
 Run Bun inventory from the workspace root:
