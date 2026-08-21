@@ -76,6 +76,6 @@
 - AI is a tool, not a persona. No anthropomorphizing.
 - Performance is non-negotiable. Batch operations, minimize round-trips, lazy-load
   aggressively.
-- **Vertical slices over horizontal layers.** Features are independent end-to-end
-  slices (own routes, components, handlers). New capabilities land in their own slice;
-  existing code stays untouched.
+- **Vertical slices over horizontal layers.** Features have one owning end-to-end
+  slice (routes, components, handlers). Keep cross-slice changes minimal; change
+  existing code when the end-to-end contract requires it.
