@@ -183,10 +183,9 @@ Do not keep a wrapper copy in the consumer repository:
 }
 ```
 
-Keep `.ai/shared` pinned to a reviewed commit. A scheduled consumer workflow can call
-`stella/.github/.github/workflows/ai-shared-update.yml` to propose fast-forward
-submodule and generated-file updates in a pull request; never fetch a floating shared
-revision during normal CI.
+Keep `.ai/shared` pinned to a reviewed commit. Bump the submodule and re-run the sync
+script in one signed commit of your own; never fetch a floating shared revision during
+normal CI.
 
 To link generated agent skills into Codex's global skill directory:
 
