@@ -19,8 +19,8 @@ Rebase or restack according to repository policy before trusting results. Review
 conflict resolutions and push safely. Preserve an explicit draft state unless the
 user asks to mark the PR ready.
 
-Merge, admin merge, deployment, and protection bypass each require explicit user
-authority. A request to finish review does not imply any of them.
+Merge, deployment, and protection bypass each require explicit user authority. A
+request to finish review does not imply any of them.
 
 ## 2. Review Independently
 
@@ -42,6 +42,13 @@ Investigate failures from their logs and fix causes within scope. Do not rerun a
 failed job repeatedly without a reason, weaken checks, reseed baselines, dismiss
 valid reviews, or bypass protections merely to make the PR green.
 
+Never request an automated review (`@coderabbitai review`, `@codex review`, or a
+timed re-request after a rate limit); reviews arrive on their own. Budget the loop:
+at most two review rounds after the first green head. When actionable findings keep
+arriving past that, keep the green head, triage the remaining findings yourself
+with a concrete accept or push-back, and land accepted fixes in one stacked
+follow-up PR instead of pushing to the converged head.
+
 ## 4. Stop at a Real Terminal State
 
 The latest pushed head has converged only when:
@@ -56,9 +63,10 @@ If convergence requires a user decision, new authority, unavailable credentials,
 or an external state change, report the exact blocker and the evidence already
 collected.
 
-Merge only when explicitly requested. Use the requested normal or admin path, and
-never use admin authority to bypass a correctness failure. After any authorized
-merge, verify the PR state and report the resulting commit.
+Merge only when explicitly requested. Use the repository's documented merge entry
+point (a merge script or queue) when one exists; a raw merge command bypasses its
+assertions. Never use admin authority to bypass a correctness failure. After any
+authorized merge, verify the PR state and report the resulting commit.
 
 Report the PR URL, latest head, review and CI state, changes made, validation run,
 and whether the terminal state is ready, merged, or blocked.

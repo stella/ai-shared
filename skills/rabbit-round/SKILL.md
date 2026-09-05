@@ -6,7 +6,8 @@ description: "Process one evidence-backed round of automated pull-request review
 # Rabbit Round
 
 Process one round of automated review feedback. Use `/finish-pr` when the user
-wants repeated monitoring until a pull request converges.
+wants repeated monitoring until a pull request converges. Never request an
+automated review; handle the threads that arrive on their own.
 
 ## 1. Capture the Review State
 

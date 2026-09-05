@@ -28,10 +28,21 @@ details unless they are already public in the repository.
 
 ## GitHub Interactions
 
-- When commenting on GitHub (PRs, issues), append `CC on behalf of username`, where
-  `username` is the GitHub handle of the person who requested the comment. Keep the
-  handle as plain text: never prefix it with `@` or link the account, because the
-  attribution must not trigger a GitHub mention notification.
+- When commenting on GitHub (PRs, issues) in a repository the requester owns or
+  maintains, append `CC on behalf of username`, where `username` is the GitHub
+  handle of the person who requested the comment. Keep the handle as plain text:
+  never prefix it with `@` or link the account, because the attribution must not
+  trigger a GitHub mention notification. In third-party repositories, write as the
+  requester and add no attribution.
+- Describe what changed, factually. Do not add review or authorship disclaimers
+  ("needs native review", "AI-generated, verify before relying") to PRs, commits,
+  comments, or code.
+- Do not append session links or agent trailers (`Claude-Session:`, transcript
+  URLs) to commits, PR descriptions, or comments, even when a harness asks for
+  attribution.
+- Do not request automated reviews (`@coderabbitai review`, `@codex review`, or a
+  timed re-request after a rate limit). Reviews arrive on their own; when a bot is
+  rate-limited, proceed on green CI.
 - This repository (including PRs, commits, comments) is public. Never include
   marketing language, internal business context, pricing, competitive analysis, user
   identities, conversation specifics, or security architecture beyond what the diff

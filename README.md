@@ -40,7 +40,7 @@ Consumer repositories are expected to use:
 AGENTS.md                # generated and committed
 CLAUDE.md                # generated shim importing AGENTS.md
 GEMINI.md                # generated shim importing AGENTS.md
-.claude/commands/        # generated flat command files
+.claude/skills/          # generated Claude Code skills
 .agents/skills/          # generated Codex-style skills
 .coderabbit.yaml         # generated shared CodeRabbit config
 ```
@@ -101,13 +101,21 @@ The same script overlays skills from:
 1. `.ai/shared/skills/`
 2. `.ai/local-skills/`
 
-onto both generated targets:
+onto both generated targets, byte for byte:
 
-- `.claude/commands/<skill>.md`
+- `.claude/skills/<skill>/SKILL.md`
 - `.agents/skills/<skill>/SKILL.md`
 
-If the same skill name exists in both sources, the
-local skill wins.
+If the same skill name exists in both sources, the local skill replaces the
+shared one entirely; there is no overlay. Skill frontmatter (`description`,
+`argument-hint`, and any other key the host understands) passes through
+unchanged, so keep it on every `SKILL.md`. A source without frontmatter gets a
+`description` derived from its first paragraph.
+
+Every backticked `/name` in a generated prompt or skill is read as a skill
+invocation and must name a generated skill; sync fails on a dangling reference.
+Sync also removes the legacy generated `.claude/commands/` directory, and
+`--check` fails while it exists.
 
 The generated directories keep only a `.gitignore`
 placeholder when no skills are present. `.gitkeep`
@@ -198,6 +206,6 @@ unprefixed global names.
 - `open-pr` — open a clean, verified pull request from the current branch
 - `plan` — create implementation plans using the shared `.agents/plans/` convention
 - `regression-hunt` — reproduce, isolate, fix, and lock down a regression
-- `security-audit` — generic security review with repo-specific overlays
+- `security-audit` — generic security review; a repo may replace it with a local skill of the same name
 - `product-think` — shape a feature/problem before implementation
 - `update-deps` — review and update third-party dependencies

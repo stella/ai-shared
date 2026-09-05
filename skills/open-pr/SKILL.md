@@ -75,7 +75,8 @@ copies.
 
 Check for accidental files, invalid states, authorization and disclosure
 boundaries, missing generated/i18n synchronization, duplicated capabilities (an
-owner in `docs/module-ownership.md` or `packages/*` that the change bypasses),
+existing owner the change bypasses; consult the repository's ownership map, such
+as `docs/module-ownership.md`, and its shared packages),
 validation of data a boundary already validated, migration compatibility,
 performance, replay safety, and tests that cover real failure modes. Fix
 confirmed defects before publishing.
