@@ -48,7 +48,9 @@
   a permanent yes/no question; a two-value union, enum, or equivalent domain type
   now is usually cheaper than migrating an `isX` flag later.
 - Conventional Commits: `feat:`, `chore:`, `fix:`, `docs:`
-- Rebase feature branches onto main (linear history)
+- Keep feature branches rebased onto main so review sees a clean diff. How a
+  branch lands (merge queue, squash) follows the repository's merge policy; main
+  stays linear either way.
 - Enable `git rerere` (`git config --global rerere.enabled true`, plus
   `rerere.autoupdate true` to auto-stage what it resolves) so conflict
   resolutions are recorded and auto-replayed across repeated or long rebases

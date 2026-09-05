@@ -37,9 +37,44 @@ expect_failure() {
 
 valid_consumer="$(new_consumer valid)"
 printf '%s\n' '{"sharedRootFiles":["rustfmt.toml"]}' > "$valid_consumer/.ai/manifest.json"
+mkdir -p "$valid_consumer/.claude/commands" "$valid_consumer/.ai/local-skills"
+printf '%s\n' '# Plan' > "$valid_consumer/.claude/commands/plan.md"
+printf '%s\n' '---' 'name: local-hinted' 'description: "Local skill."' \
+  'argument-hint: "[target]"' '---' '' '# Local Hinted' '' 'Body.' \
+  > "$valid_consumer/.ai/local-skills/local-hinted.md"
 run_sync "$valid_consumer"
 cmp "$SOURCE_ROOT/rustfmt.toml" "$valid_consumer/rustfmt.toml"
+if [ -e "$valid_consumer/.claude/commands" ]; then
+  echo "error: sync kept the legacy .claude/commands directory" >&2
+  exit 1
+fi
+for skill in plan regression-hunt local-hinted; do
+  cmp "$valid_consumer/.claude/skills/$skill/SKILL.md" "$valid_consumer/.agents/skills/$skill/SKILL.md"
+  grep -q '^description: ' "$valid_consumer/.claude/skills/$skill/SKILL.md"
+done
+grep -q '^argument-hint: "\[what regressed\]"' "$valid_consumer/.claude/skills/regression-hunt/SKILL.md"
+grep -q '^argument-hint: "\[target\]"' "$valid_consumer/.claude/skills/local-hinted/SKILL.md"
 bash "$SOURCE_ROOT/scripts/sync-ai-skills.sh" --check "$valid_consumer"
+
+mkdir -p "$valid_consumer/.claude/commands"
+if bash "$SOURCE_ROOT/scripts/sync-ai-skills.sh" --check "$valid_consumer" >/dev/null 2>&1; then
+  echo "error: check accepted a legacy .claude/commands directory" >&2
+  exit 1
+fi
+rmdir "$valid_consumer/.claude/commands"
+
+dangling_consumer="$(new_consumer dangling)"
+mkdir -p "$dangling_consumer/.ai/local-skills"
+printf '%s\n' '# Dangling' '' 'Read `/missing-skill` first.' \
+  > "$dangling_consumer/.ai/local-skills/dangling.md"
+expect_failure "$dangling_consumer" 'references `/missing-skill`, which is not a generated skill'
+
+dangling_prompt_consumer="$(new_consumer dangling-prompt)"
+mkdir -p "$dangling_prompt_consumer/.ai/local"
+printf '%s\n' '## Routing' '' 'See `/conventions-nowhere`.' > "$dangling_prompt_consumer/.ai/local/agents.md"
+printf '%s\n' '{"agents":{"modules":["engineering"],"local":".ai/local/agents.md"}}' \
+  > "$dangling_prompt_consumer/.ai/manifest.json"
+expect_failure "$dangling_prompt_consumer" 'references `/conventions-nowhere`, which is not a generated skill'
 
 scalar_consumer="$(new_consumer scalar)"
 printf '%s\n' '{"sharedRootFiles":"rustfmt.toml"}' > "$scalar_consumer/.ai/manifest.json"

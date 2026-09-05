@@ -1,8 +1,7 @@
 ## Testing
 
 Only test what can actually go wrong: bugs the type system, framework, or linter would
-miss. Prefer invariants over examples when the input space is large. Full conventions
-in `/conventions-testing`.
+miss. Prefer invariants over examples when the input space is large.
 
 A test guarding a detector or backstop must use inputs the detector can actually
 match: production-shaped ids and payloads, not shortened stand-ins a UUID or

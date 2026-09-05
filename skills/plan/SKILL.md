@@ -1,6 +1,7 @@
 ---
 name: plan
 description: "Create a concise, evidence-backed implementation plan in the repository planning area when the user explicitly asks for a plan."
+argument-hint: "[plan slug or task]"
 ---
 
 # Plan
@@ -41,9 +42,10 @@ contracts without inventing files or symbols. Identify ownership boundaries,
 data contracts, invalid states, rollout risks, and generated artifacts
 explicitly.
 
-Before proposing a new helper, module, or schema, check
-`docs/module-ownership.md` and the existing packages for the capability. Name
-the owner the slice extends, or state why a second implementation is correct.
+Before proposing a new helper, module, or schema, check the repository's
+ownership map (`docs/module-ownership.md` where one exists) and the existing
+packages for the capability. Name the owner the slice extends, or state why a
+second implementation is correct.
 
 ## 3. Create a Collision-Safe File
 
