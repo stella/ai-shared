@@ -122,6 +122,18 @@ placeholder when no skills are present. `.gitkeep`
 files from source directories are ignored and are
 not copied into generated outputs.
 
+The standalone skill validator requires Bun 1.4.2 or newer. It checks
+directory-format skills for required frontmatter metadata and broken local
+Markdown links or images; legacy flat skill files remain supported by the
+Node-compatible sync script. Run these checks with:
+
+    bun scripts/validate-skills.ts skills
+    bun test scripts/validate-skills.test.ts
+
+Consumer repositories can validate their generated skills with:
+
+    bun .ai/shared/scripts/validate-skills.ts .agents/skills
+
 The same sync also copies shared root-level automation files, always
 `.coderabbit.yaml`, from `.ai/shared/` into the consumer repository root.
 
