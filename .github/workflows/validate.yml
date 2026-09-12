@@ -15,7 +15,14 @@ jobs:
     timeout-minutes: 5
     steps:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+      - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2
+        with:
+          bun-version: 1.4.2
       - name: Check shell syntax
         run: bash -n scripts/*.sh
       - name: Run sync regressions
         run: bash scripts/test-sync-ai-skills.sh
+      - name: Validate shared skills
+        run: bun scripts/validate-skills.ts skills
+      - name: Run skill validation tests
+        run: bun test scripts/validate-skills.test.ts
