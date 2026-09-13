@@ -43,8 +43,8 @@
   `config` owns handler-level concerns such as `body`, `params`, `query`, and
   `permissions`; reusable helpers must live in a separate module instead of being
   exported from the endpoint file.
-- Backend handlers should be created via `createSafeHandler` (workspace-scoped) or
-  `createSafeRootHandler` (root-scoped) from `/apps/api/src/lib/api-handlers.ts`.
+- Workspace-scoped handlers use `createSafeHandler`; root-scoped handlers use
+  `createSafeRootHandler` from `/apps/api/src/lib/api-handlers.ts`.
   Both wrap handlers in `Result.gen()` for structured error capture. Use
   `async function*` with `yield* Result.await(safeDb(...))` for DB operations and
   `Result.err(new HandlerError(...))` for error returns. Do not export raw handlers
