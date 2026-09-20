@@ -54,6 +54,30 @@ for skill in plan regression-hunt local-hinted; do
 done
 grep -q '^argument-hint: "\[what regressed\]"' "$valid_consumer/.claude/skills/regression-hunt/SKILL.md"
 grep -q '^argument-hint: "\[target\]"' "$valid_consumer/.claude/skills/local-hinted/SKILL.md"
+for skill_root in .agents/skills .claude/skills; do
+  open_pr_skill="$valid_consumer/$skill_root/open-pr/SKILL.md"
+  rabbit_round_skill="$valid_consumer/$skill_root/rabbit-round/SKILL.md"
+  finish_pr_skill="$valid_consumer/$skill_root/finish-pr/SKILL.md"
+  grep -Fqx 'PR_METADATA="$(gh pr view "$PR_NUMBER" --repo "$BASE_REPO" --json number,baseRefName,headRefOid,headRepository,url)"' \
+    "$open_pr_skill"
+  if sed -n '/^## 3\. Rebase the Correct Layer$/,/^## 4\. Review the Actual Change$/p' \
+    "$open_pr_skill" \
+    | grep 'gh pr view' \
+    | grep -Fvx 'PR_METADATA="$(gh pr view "$PR_NUMBER" --repo "$BASE_REPO" --json number,baseRefName,headRefOid,headRepository,url)"' \
+    >/dev/null; then
+    echo "error: open-pr contains an unpinned gh pr view lookup" >&2
+    exit 1
+  fi
+  grep -Fq '`failing_ci` > `needs_changes` > `pending_bots` > `clean`' "$rabbit_round_skill"
+  grep -Fq 'review-comment' "$rabbit_round_skill"
+  grep -Fq 'issue-comment' "$rabbit_round_skill"
+  grep -Fq 'surface, node ID, and content exactly match' "$rabbit_round_skill"
+  grep -Fq 'make it stacked only when repository policy or the existing branch' "$finish_pr_skill"
+  if grep -Fq 'Open one stacked follow-up PR' "$finish_pr_skill"; then
+    echo "error: finish-pr requires an unconditional stacked follow-up" >&2
+    exit 1
+  fi
+done
 bash "$SOURCE_ROOT/scripts/sync-ai-skills.sh" --check "$valid_consumer"
 
 mkdir -p "$valid_consumer/.claude/commands"
