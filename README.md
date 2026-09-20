@@ -38,7 +38,6 @@ Consumer repositories are expected to use:
 .ai/generated-agent-files.txt # generated prompt-file registry
 .ai/local-skills/        # repo-local Codex-style skills
 AGENTS.md                # generated and committed
-CLAUDE.md                # generated shim importing AGENTS.md
 GEMINI.md                # generated shim importing AGENTS.md
 .claude/skills/          # generated Claude Code skills
 .agents/skills/          # generated Codex-style skills
@@ -53,8 +52,8 @@ The sync script assembles `AGENTS.md` from:
 2. `.ai/local/agents.md`
 
 Repositories can add directory-specific instructions with `agents.scopes`.
-Each scope generates its own `AGENTS.md`, `CLAUDE.md`, and `GEMINI.md`; agents
-combine those instructions with the root guidance when working in that subtree:
+Each scope generates its own `AGENTS.md` and `GEMINI.md`; agents combine those
+instructions with the root guidance when working in that subtree:
 
 ```json
 {
@@ -90,8 +89,10 @@ The generated `.ai/generated-agent-files.txt` registry lets sync remove a
 scoped prompt after its manifest entry is removed without touching unrelated
 hand-written files. Commit the registry with the generated prompt files.
 
-The script also generates `CLAUDE.md` and `GEMINI.md` adapters so committed
-instructions are immediately usable by multiple coding agents.
+The script also generates `GEMINI.md` adapters so committed instructions are
+immediately usable by Gemini CLI. Claude Code reads `AGENTS.md` directly, so sync
+removes its former generated `CLAUDE.md` aliases while preserving substantive,
+hand-written `CLAUDE.md` files.
 When `.ai/manifest.json` contains an `agents` object, these root prompt files are
 generated even if the module list is empty and the local fragment is absent, so
 `--check` still catches stale committed instructions.
