@@ -2,16 +2,18 @@
 
 ### Rust
 
-- Use Rust 2024 for new crates. Pin the toolchain in `rust-toolchain.toml` and
+- Use Rust 2024 for new crates. Pin Rust 1.99.0 in `rust-toolchain.toml` and
   keep `rustfmt` and `clippy` installed.
 - In workspaces, put shared lint policy in `[workspace.lints]`; member crates
   should opt in with `[lints] workspace = true`.
 - Treat
   `cargo clippy --workspace --all-targets --all-features -- -D warnings` as the
   baseline quality gate unless a repo documents a narrower command.
-- Use Dylint for shared stella-specific Rust lints that Clippy cannot express.
-  Run `cargo dylint --workspace --all` after Clippy when the repo has
-  `dylint.toml`.
+- Use the stable shared source lint for stella-specific Rust rules that Clippy
+  cannot express. Run `cargo stella-lint .` after Clippy.
+  Install the released checker with
+  `cargo install --git https://github.com/stella/tooling --rev a1bd81740ecb4b66999f56d1716e1190c4e7272f --locked stella_source_lint`.
+  Key its CI cache by the release revision.
 - Prefer fixing custom lint rules at the shared source over broad local
   suppressions when a rule is wrong across repos.
 - Forbid unsafe code by default. If `unsafe` is truly required, keep it in a
