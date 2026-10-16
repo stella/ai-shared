@@ -72,7 +72,7 @@ const validateMetadata = (
   metadata: SkillMetadata,
 ): ValidationError[] => {
   const errors: ValidationError[] = [];
-  const skillName = metadata.name;
+  const skillName = metadata["name"];
   if (
     typeof skillName !== "string" ||
     skillName.length > 64 ||
@@ -92,8 +92,8 @@ const validateMetadata = (
   }
 
   if (
-    typeof metadata.description !== "string" ||
-    metadata.description.trim().length === 0
+    typeof metadata["description"] !== "string" ||
+    metadata["description"].trim().length === 0
   ) {
     errors.push({
       file: skillFile,
