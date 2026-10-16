@@ -221,3 +221,16 @@ unprefixed global names.
 - `security-audit` — generic security review; a repo may replace it with a local skill of the same name
 - `product-think` — shape a feature/problem before implementation
 - `update-deps` — review and update third-party dependencies
+
+## Tooling
+
+Install the pinned development tools with `bun install --frozen-lockfile`.
+Run `bun run lint`, `bun run typecheck`, and `bun test` for TypeScript automation;
+`bash scripts/test-sync-ai-skills.sh` covers shell synchronization behavior.
+`bun run check:toolchain` validates the shared tooling policy. CI uses the shared
+change detector to select TypeScript compiler parity checks.
+
+The cloud environment is generated from `stll-toolchain.json` and `.node-version`
+with `bunx --no-install stll-cloud-setup`. Provision it with
+`bash .agents/cloud-setup.sh install`; start a session with
+`bash .agents/cloud-setup.sh start`.

@@ -1,0 +1,8 @@
+[install]
+# Keep third-party releases in quarantine for five days.
+minimumReleaseAge = 432_000
+minimumReleaseAgeExcludes = [
+  "@stll/oxlint-config", # quarantine-excluded-since: 2026-10-16T20:29:00.000Z
+  "@stll/oxlint-plugin", # quarantine-excluded-since: 2026-10-16T20:29:00.000Z
+  "@stll/typescript-config", # quarantine-excluded-since: 2026-10-16T20:29:00.000Z
+]

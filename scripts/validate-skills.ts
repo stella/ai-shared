@@ -72,7 +72,7 @@ const validateMetadata = (
   metadata: SkillMetadata,
 ): ValidationError[] => {
   const errors: ValidationError[] = [];
-  const skillName = metadata.name;
+  const skillName = metadata["name"];
   if (
     typeof skillName !== "string" ||
     skillName.length > 64 ||
@@ -92,8 +92,8 @@ const validateMetadata = (
   }
 
   if (
-    typeof metadata.description !== "string" ||
-    metadata.description.trim().length === 0
+    typeof metadata["description"] !== "string" ||
+    metadata["description"].trim().length === 0
   ) {
     errors.push({
       file: skillFile,
@@ -221,9 +221,9 @@ export const validateSkills = (rootInput: string): ValidationError[] => {
     errors.push(...validateMarkdownReferences({ skillDirectory, skillBody }));
   }
 
-  return errors.map((error) => ({
-    ...error,
-    file: formatPath(root, error.file),
+  return errors.map(({ file, message }) => ({
+    file: formatPath(root, file),
+    message,
   }));
 };
 
