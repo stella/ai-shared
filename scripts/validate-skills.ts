@@ -221,9 +221,9 @@ export const validateSkills = (rootInput: string): ValidationError[] => {
     errors.push(...validateMarkdownReferences({ skillDirectory, skillBody }));
   }
 
-  return errors.map((error) => ({
-    ...error,
-    file: formatPath(root, error.file),
+  return errors.map(({ file, message }) => ({
+    file: formatPath(root, file),
+    message,
   }));
 };
 
