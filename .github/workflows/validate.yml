@@ -14,10 +14,27 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
-      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          fetch-depth: 0
       - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2
         with:
-          bun-version: 1.4.2
+          bun-version-file: package.json
+      - run: bun install --frozen-lockfile
+      - run: bun run check:toolchain
+      - name: Detect toolchain changes
+        id: toolchain
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.before }}
+        run: |
+          result=$(bunx --no-install stll-toolchain-changed --since "${BASE_SHA:-HEAD^}")
+          echo "changed=$(printf '%s' "$result" | jq -r '.changed')" >> "$GITHUB_OUTPUT"
+      - run: bun run lint
+      - run: bun run typecheck
+      - run: bun run check:typecheck-parity
+        if: steps.toolchain.outputs.changed == 'true'
+      - run: bun test scripts/tooling-adoption.test.ts
       - name: Check shell syntax
         run: bash -n scripts/*.sh
       - name: Run sync regressions
