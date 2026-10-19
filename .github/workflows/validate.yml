@@ -2,6 +2,8 @@ name: Validate
 
 on:
   pull_request:
+  merge_group:
+    types: [checks_requested]
   push:
     branches: [main]
 
@@ -26,7 +28,7 @@ jobs:
       - name: Detect toolchain changes
         id: toolchain
         env:
-          BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.before }}
+          BASE_SHA: ${{ github.event.merge_group.base_sha || github.event.pull_request.base.sha || github.event.before }}
         run: |
           result=$(bunx --no-install stll-toolchain-changed --since "${BASE_SHA:-HEAD^}")
           echo "changed=$(printf '%s' "$result" | jq -r '.changed')" >> "$GITHUB_OUTPUT"
@@ -43,3 +45,33 @@ jobs:
         run: bun scripts/validate-skills.ts skills
       - name: Run skill validation tests
         run: bun test scripts/validate-skills.test.ts
+
+  oxfmt:
+    name: oxfmt --check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2.2.0
+        with:
+          bun-version-file: package.json
+      - run: bun install --frozen-lockfile
+      - run: bun run check:toolchain
+      - name: Check formatting
+        run: bun run format:check
+
+  ci-result:
+    if: always()
+    needs: [sync-script, oxfmt]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Require every validation job
+        env:
+          SYNC_SCRIPT_RESULT: ${{ needs.sync-script.result }}
+          OXFMT_RESULT: ${{ needs.oxfmt.result }}
+        run: |
+          test "$SYNC_SCRIPT_RESULT" = success
+          test "$OXFMT_RESULT" = success
