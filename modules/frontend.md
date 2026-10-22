@@ -2,6 +2,8 @@
 
 ### UX & Brand
 
+- Reuse the project's established components and primitives with local styling
+  overrides instead of recreating native controls.
 - Use semantic design tokens (for example, `bg-muted`, `text-foreground`, and
   `border`) instead of raw colour values.
 - When using statically scanned utility CSS, do not construct class names dynamically

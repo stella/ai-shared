@@ -14,6 +14,8 @@
 - When the linter blocks an `as` cast, restructure to narrow properly (type guards,
   `in` checks, records instead of arrays). If truly unavoidable, ask before adding and
   include a `// SAFETY:` comment explaining why the cast is sound.
+- When a type mismatch appears, trace it to the source that produces the wrong type
+  rather than casting at the consumer.
 - Never annotate or cast a value the compiler already infers, and never pass explicit
   type arguments to inference-driven APIs. Every redundant annotation or generic can
   mask real errors and break the inference chain; let inference flow and narrow at
