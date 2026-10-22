@@ -77,8 +77,11 @@
   scripts, and AI agents alike.
 - No lock-in: standard formats, self-hosting is first-class.
 - AI is a tool, not a persona. No anthropomorphizing.
-- Performance is non-negotiable. Batch operations, minimize round-trips, lazy-load
-  aggressively.
+- Performance is measured by construction. Every new or changed surface (route,
+  screen, endpoint, tool, mutation, live event, job, polling loop) has a
+  deterministic scaling test at N and 10N (statements, round trips, bytes,
+  refetches), reached through a census of the real registry. Batch operations,
+  minimize round-trips, lazy-load aggressively.
 - **Vertical slices over horizontal layers.** Features have one owning end-to-end
   slice (routes, components, handlers). Keep cross-slice changes minimal; change
   existing code when the end-to-end contract requires it.
