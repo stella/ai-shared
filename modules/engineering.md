@@ -2,7 +2,7 @@
 
 - Use Computer Use or desktop/browser UI control only when the user explicitly asks for it. General fix, build, and test requests do not authorize operating user applications; isolated automated tests and code-level checks remain allowed.
 - Never manually reformat code you did not semantically change (auto-formatter output
-  from `bun run format` is fine to include)
+  from `bun fmt` is fine to include)
 - In prose, vary punctuation: prefer colons, semicolons, commas, and parentheses
   over em dashes. This does not apply to source code, command syntax, generated
   content, or exact identifiers.
