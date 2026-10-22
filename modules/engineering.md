@@ -6,10 +6,6 @@
 - In prose, vary punctuation: prefer colons, semicolons, commas, and parentheses
   over em dashes. This does not apply to source code, command syntax, generated
   content, or exact identifiers.
-- Omit needless words. Vigorous writing is concise: a sentence should contain no
-  unnecessary words, a paragraph no unnecessary sentences, for the same reason that a
-  drawing should have no unnecessary lines and a machine no unnecessary parts. Applies
-  to comments, commits, PRs, and docs.
 - Do not add backward-compatibility machinery by default. First identify the concrete
   older clients, persisted data, integrations, or deployment states that must remain
   supported. When none exist, prefer a clean migration or cutover; aliases, dual
@@ -55,9 +51,6 @@
 - Enable `git rerere` (`git config --global rerere.enabled true`, plus
   `rerere.autoupdate true` to auto-stage what it resolves) so conflict
   resolutions are recorded and auto-replayed across repeated or long rebases
-- Fail fast: validate at boundaries, return/throw early
-- Minimize brace nesting: invert conditions, early returns
-- Use named constants, not string literals for domain values
 - No direct `document.cookie` assignment
 - Avoid spread in loop accumulators (use `.push()`)
 - If you encounter a pre-existing bug or lint error, fix it. Preserve focus through

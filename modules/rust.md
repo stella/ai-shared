@@ -45,8 +45,6 @@
   are valuable.
 - Add `#[must_use]` to builders, config transforms, computed results, and APIs
   where ignoring the return value is likely a bug.
-- Keep comments concise. Comment invariants, non-obvious algorithms, generated
-  data contracts, and safety boundaries; do not narrate straightforward code.
 - Keep data out of code. Domain dictionaries, language rules, fixtures, and
   generated artifacts should live in reproducible data files or build outputs,
   organized by language/concept where relevant.

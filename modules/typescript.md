@@ -14,9 +14,6 @@
 - When the linter blocks an `as` cast, restructure to narrow properly (type guards,
   `in` checks, records instead of arrays). If truly unavoidable, ask before adding and
   include a `// SAFETY:` comment explaining why the cast is sound.
-- When a type mismatch appears, trace it to the source (e.g., the handler or query
-  that produces the wrong type) rather than casting at the consumer. Check git to
-  verify you did not introduce the mismatch yourself before blaming the framework.
 - Never annotate or cast a value the compiler already infers, and never pass explicit
   type arguments to inference-driven APIs. Every redundant annotation or generic can
   mask real errors and break the inference chain; let inference flow and narrow at
@@ -44,14 +41,9 @@
   readable. Use a named `SomethingOptions`, `SomethingArgs`, or `SomethingParams`
   object for 3+ arguments, or when two same-type or otherwise interchangeable
   positional arguments would be easy to mix up.
-- Reuse utility types from libraries instead of hand-rolling equivalents. Check the
-  dependencies already in use before defining a custom helper type.
 - Keep helper-local types close to the helper they describe: put `SomethingOptions`,
   `SomethingResult`, and similar aliases immediately above the function, not in a
   file-level type dump far away from the implementation.
-- If a return type is noisy enough to hurt readability, hoist it into a nearby alias
-  such as `SomethingResult` and use it in the signature (e.g., `SomethingResult` or
-  `Promise<SomethingResult>`). If the return type is simple, keep it inline.
 - Watch type-instantiation cost in hot generic paths such as schema builders, route
   trees, and query-option graphs. Prefer narrowing over annotation, and keep large
   unused types out of inferred return positions.
