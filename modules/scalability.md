@@ -1,6 +1,6 @@
 ## Scalability
 
-Never paint yourself into a corner. Architecture must support Magic Circle scale
+Architecture must support Magic Circle scale
 without a rewrite. Never return unbounded result sets; keep the API stateless; filter
 by tenant ID in the query. Full guidelines in `/conventions-scale`.
 
