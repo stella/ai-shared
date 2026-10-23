@@ -52,9 +52,10 @@
 - Keep feature branches rebased onto main so review sees a clean diff. How a
   branch lands (merge queue, squash) follows the repository's merge policy; main
   stays linear either way.
-- Enable `git rerere` (`git config --global rerere.enabled true`, plus
-  `rerere.autoupdate true` to auto-stage what it resolves) so conflict
-  resolutions are recorded and auto-replayed across repeated or long rebases
+- Enable `git rerere` in the clone, never globally (`git config rerere.enabled
+  true`, plus `rerere.autoupdate true` to auto-stage what it resolves; one-off:
+  `git -c rerere.enabled=true merge ...`) so conflict resolutions are recorded
+  and auto-replayed across repeated or long rebases
 - Fail fast: validate at boundaries, return/throw early
 - Minimize brace nesting: invert conditions, early returns
 - Use named constants, not string literals for domain values
