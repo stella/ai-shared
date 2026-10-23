@@ -1,11 +1,12 @@
+import { expect, test } from "bun:test";
+import { execFileSync } from "node:child_process";
+import { readFileSync } from "node:fs";
+
 import { library } from "@stll/oxlint-config";
 import {
   portableSafetyPluginSpecifiers,
   portableSafetyRules,
 } from "@stll/oxlint-plugin";
-import { test, expect } from "bun:test";
-import { execFileSync } from "node:child_process";
-import { readFileSync } from "node:fs";
 
 import config from "../oxlint.config";
 
