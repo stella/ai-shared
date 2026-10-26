@@ -6,19 +6,17 @@
     "check:toolchain": "stll-toolchain-check",
     "lint": "bun --bun oxlint -c oxlint.config.ts --report-unused-disable-directives-severity=error --deny-warnings --type-aware .",
     "typecheck": "bun check --no-pretty --all --project=tsconfig.json",
-    "check:typecheck-parity": "stll-typecheck-parity",
     "validate:skills": "bun scripts/validate-skills.ts skills",
     "test": "bun test scripts/validate-skills.test.ts scripts/tooling-adoption.test.ts",
     "sync-ai:check": "bash scripts/sync-ai-skills.sh --check"
   },
   "devDependencies": {
-    "@stll/oxlint-config": "1.9.0",
-    "@stll/oxlint-plugin": "0.6.2",
-    "@stll/typescript-config": "0.9.0",
+    "@stll/oxlint-config": "2.0.0",
+    "@stll/oxlint-plugin": "0.6.3",
+    "@stll/typescript-config": "0.10.0",
     "bun-types": "1.4.4",
     "oxlint": "1.87.0",
-    "oxlint-tsgolint": "7.0.2003",
-    "typescript": "7.0.2"
+    "oxlint-tsgolint": "7.0.2003"
   },
   "packageManager": "bun@1.4.4",
   "trustedDependencies": []
