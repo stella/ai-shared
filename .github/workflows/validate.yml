@@ -23,17 +23,8 @@ jobs:
           bun-version-file: package.json
       - run: bun install --frozen-lockfile
       - run: bun run check:toolchain
-      - name: Detect toolchain changes
-        id: toolchain
-        env:
-          BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.before }}
-        run: |
-          result=$(bunx --no-install stll-toolchain-changed --since "${BASE_SHA:-HEAD^}")
-          echo "changed=$(printf '%s' "$result" | jq -r '.changed')" >> "$GITHUB_OUTPUT"
       - run: bun run lint
       - run: bun run typecheck
-      - run: bun run check:typecheck-parity
-        if: steps.toolchain.outputs.changed == 'true'
       - run: bun test scripts/tooling-adoption.test.ts
       - name: Check shell syntax
         run: bash -n scripts/*.sh

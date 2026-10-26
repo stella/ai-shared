@@ -227,8 +227,7 @@ unprefixed global names.
 Install the pinned development tools with `bun install --frozen-lockfile`.
 Run `bun run lint`, `bun run typecheck`, and `bun test` for TypeScript automation;
 `bash scripts/test-sync-ai-skills.sh` covers shell synchronization behavior.
-`bun run check:toolchain` validates the shared tooling policy. CI uses the shared
-change detector to select TypeScript compiler parity checks.
+`bun run check:toolchain` validates the shared tooling policy.
 
 The cloud environment is generated from `stll-toolchain.json` and `.node-version`
 with `bunx --no-install stll-cloud-setup`. Provision it with

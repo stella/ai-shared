@@ -25,8 +25,8 @@
   `as const satisfies T`, not a `: T` annotation. `satisfies` checks the value without
   widening it or paying the annotation's instantiation cost.
 - Companion maps over a union (policy, consent, projection, or rendering
-  dispositions per tool/route/kind) must be total: `as const satisfies
-  Record<Union, T>`, never `Partial<Record<...>>`; `Partial` lets a new union
+  dispositions per tool/route/kind) must be total:
+  `as const satisfies Record<Union, T>`, never `Partial<Record<...>>`; `Partial` lets a new union
   member land without a decision. Derive the union from the source of truth
   (`keyof typeof SOURCE_MAP`, or a mapped filter over it) instead of
   hand-listing names.
