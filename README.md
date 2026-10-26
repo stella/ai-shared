@@ -83,7 +83,7 @@ Frontend guidance is deliberately layered:
   payload rules.
 - `react` contains React component and type conventions.
 - `tanstack-react` contains TanStack Router and Query conventions.
-- `stella-web` contains Stella's coss, Eden, Zustand, and debounce conventions.
+- `stella-web` contains Stella's coss, API client, Zustand, and debounce conventions.
 
 The generated `.ai/generated-agent-files.txt` registry lets sync remove a
 scoped prompt after its manifest entry is removed without touching unrelated
