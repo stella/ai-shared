@@ -100,6 +100,17 @@ printf '%s\n' '{"agents":{"modules":["engineering"],"local":".ai/local/agents.md
   > "$dangling_prompt_consumer/.ai/manifest.json"
 expect_failure "$dangling_prompt_consumer" 'references `/conventions-nowhere`, which is not a generated skill'
 
+# Under pipefail, a reader that exits early (`grep -q`, `head`) kills its
+# writer with SIGPIPE, so the pipeline's status depends on scheduling: a skill
+# lookup piped into `grep -q` reported present skills as missing.
+for script_path in "$SOURCE_ROOT"/scripts/*.sh; do
+  if grep -nE '\|[[:space:]]*(grep([[:space:]]+-[A-Za-z-]+)*[[:space:]]+(-[A-Za-z]*[qm][A-Za-z0-9]*|--quiet|--silent|--max-count)|head)([[:space:]=]|$)' \
+    "$script_path" >&2; then
+    echo "error: $script_path pipes into a reader that can exit before its writer" >&2
+    exit 1
+  fi
+done
+
 scalar_consumer="$(new_consumer scalar)"
 printf '%s\n' '{"sharedRootFiles":"rustfmt.toml"}' > "$scalar_consumer/.ai/manifest.json"
 expect_failure "$scalar_consumer" "manifest.sharedRootFiles must be an array"

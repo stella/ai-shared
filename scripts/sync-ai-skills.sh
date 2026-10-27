@@ -88,7 +88,7 @@ strip_frontmatter() {
 source_has_frontmatter() {
   local source_path="$1"
 
-  head -n 1 "$source_path" | grep -qx -- "---"
+  [ "$(head -n 1 "$source_path")" = "---" ]
 }
 
 derive_description() {
@@ -814,20 +814,21 @@ write_shared_root_files() {
 # (`/conventions-db`, `/rabbit-round`). A reference to a skill this repository
 # does not generate is silent drift: agents are told to read something that does
 # not exist. Fail instead.
+#
+# The names are matched against a file, not a pipe: `grep -q` stops reading at
+# the first match, and under pipefail the writer's SIGPIPE made a generated
+# skill read as missing whenever grep exited before the writer finished.
 check_skill_references() {
   local errors=0 reference name
-  local -a skill_names=()
+  local skill_names_path="$TMP_ROOT/generated-skill-names.txt"
 
-  while IFS= read -r name; do
-    [ -n "$name" ] || continue
-    skill_names+=("$name")
-  done < <(find "$GENERATED_AGENTS_DIR" -mindepth 1 -maxdepth 1 -type d -exec basename {} \; | sort)
+  find "$GENERATED_AGENTS_DIR" -mindepth 1 -maxdepth 1 -type d -exec basename {} \; > "$skill_names_path"
 
   while IFS= read -r reference; do
     [ -n "$reference" ] || continue
     name="${reference#\`/}"
     name="${name%\`}"
-    if ! printf '%s\n' "${skill_names[@]}" | grep -qx -- "$name"; then
+    if ! grep -Fqx -- "$name" "$skill_names_path"; then
       echo "error: prompt references \`/$name\`, which is not a generated skill" >&2
       errors=$((errors + 1))
     fi
