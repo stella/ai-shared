@@ -102,10 +102,26 @@ expect_failure "$dangling_prompt_consumer" 'references `/conventions-nowhere`, w
 
 # Under pipefail, a reader that exits early (`grep -q`, `head`) kills its
 # writer with SIGPIPE, so the pipeline's status depends on scheduling: a skill
-# lookup piped into `grep -q` reported present skills as missing.
+# lookup piped into `grep -q` reported present skills as missing. A `||`
+# fallback is not a pipeline, so neither of its bars counts.
+early_exit_pipe='(^|[^|])\|[[:space:]]*(grep([[:space:]]+-[A-Za-z-]+)*[[:space:]]+(-[A-Za-z]*[qm][A-Za-z0-9]*|--quiet|--silent|--max-count)|head)([[:space:]=]|$)'
+# The samples spell the bar as a variable so this file's own scan below
+# does not see them.
+bar='|'
+for pipeline in "list $bar grep -q name" "list${bar}head -n 1" "list $bar grep -m1 name"; do
+  if ! grep -qE "$early_exit_pipe" <<<"$pipeline"; then
+    echo "error: early-exit pipe check missed: $pipeline" >&2
+    exit 1
+  fi
+done
+for fallback in "lookup $bar$bar grep -q name file" "lookup${bar}${bar}head -n 1 file"; do
+  if grep -qE "$early_exit_pipe" <<<"$fallback"; then
+    echo "error: early-exit pipe check flagged a fallback: $fallback" >&2
+    exit 1
+  fi
+done
 for script_path in "$SOURCE_ROOT"/scripts/*.sh; do
-  if grep -nE '\|[[:space:]]*(grep([[:space:]]+-[A-Za-z-]+)*[[:space:]]+(-[A-Za-z]*[qm][A-Za-z0-9]*|--quiet|--silent|--max-count)|head)([[:space:]=]|$)' \
-    "$script_path" >&2; then
+  if grep -nE "$early_exit_pipe" "$script_path" >&2; then
     echo "error: $script_path pipes into a reader that can exit before its writer" >&2
     exit 1
   fi
