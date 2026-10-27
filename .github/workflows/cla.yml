@@ -6,12 +6,12 @@ on:
   pull_request_target: # zizmor: ignore[dangerous-triggers] delegates to pinned reusable CLA workflow; never check out PR code here
     types: [opened, synchronize, reopened, closed]
 
+# The reusable workflow cannot exceed these, so they mirror its own block.
 permissions:
-  actions: write
   contents: read
+  checks: write
   issues: write
-  pull-requests: write
-  statuses: write
+  pull-requests: read
 
 jobs:
   cla:
