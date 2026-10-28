@@ -2,7 +2,7 @@
 
 ### Rust
 
-- Use Rust 2024 for new crates. Pin Rust 1.99.0 in `rust-toolchain.toml` and
+- Use Rust 2024 for new crates. Pin Rust 1.99.1 in `rust-toolchain.toml` and
   keep `rustfmt` and `clippy` installed.
 - In workspaces, put shared lint policy in `[workspace.lints]`; member crates
   should opt in with `[lints] workspace = true`.
