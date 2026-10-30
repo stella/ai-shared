@@ -31,8 +31,8 @@ candidate until validation establishes a reachable security failure.
   issue for a suspected vulnerability. Returning findings privately to the requester
   is not public disclosure.
 - When the user explicitly requests an external vulnerability report, follow the
-  repository's private reporting channel. For Stella repositories, route it to
-  `security@stellaworkspace.com`. Check the latest published release before
+  repository's private reporting channel named in its `SECURITY.md`. Check the
+  latest published release before
   reporting when possible, and include the affected version, impact, reproduction
   steps, and known mitigations. Never include personal data or repository secrets.
 

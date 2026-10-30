@@ -10,8 +10,10 @@
 - Prefer tagged errors (`APIError`, `TaggedError` subclasses) over bare `new Error()`.
   Tagged errors carry structured context (status, cause) for error handling and
   reporting. Every `TaggedError` must include a `message: string` field.
-- All errors must be surfaced to the user (toast) or propagated to the caller. Capture
-  errors before throwing (PostHog). Never swallow errors silently.
+- Outside boundary layers, return `Result.err` instead of throwing. Every failure is
+  surfaced to the user or propagated to the caller through the project's shared
+  notifier or capture owner; never swallow it. No empty `.catch` fallbacks and no
+  bare `void promise`.
 - Do not leave ad hoc `console.error(...)` in product code. Route telemetry-only
   failures through the shared analytics or logging helpers so observability stays
   structured.

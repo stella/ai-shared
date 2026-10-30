@@ -12,10 +12,8 @@ a CI failure or a reviewable diff, never silently. The guards:
 - `x-db-queries` response header (dev/CI only): per-request DB query counter that
   feeds the network baseline's query budgets.
 
-Fix the regression first. Reseeding a baseline (the route-smoke e2e suite run with
-`E2E_NETWORK_BASELINE=write` set, or `bun scripts/bundle-baseline.ts
---write-baseline`) is a product decision that must
-be justified in the PR description; it is not a mechanical way to make CI green.
-Start route data in loaders (`ensureRouteQueryData`), batch DB work instead of
-growing a query budget, and tighten baselines after a perf fix. Full guidelines,
-failure playbook, and the current hotspot burn-down list in `/conventions-perf`.
+Fix the regression first; a budget increase is a justified, reviewed decision,
+never a mechanical way to make CI green. Start route data in loaders
+(`ensureRouteQueryData`), batch DB work instead of growing a query budget, and
+tighten budgets after a perf fix. How to justify an increase, the failure
+playbook and the hotspot report live in `/conventions-perf`.

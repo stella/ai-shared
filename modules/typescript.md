@@ -9,11 +9,11 @@
 - Construct a discriminated-union branch transition explicitly: list the target
   branch's fields rather than spreading the previous object and overriding the
   discriminator, so stale fields from the old branch cannot leak through the spread.
-  Read a union with a `switch` plus a `never` exhaustiveness check over an `if`/`else`
-  chain.
-- When the linter blocks an `as` cast, restructure to narrow properly (type guards,
-  `in` checks, records instead of arrays). If truly unavoidable, ask before adding and
-  include a `// SAFETY:` comment explaining why the cast is sound.
+  Read a union with an exhaustive `switch` over an `if`/`else` chain; when a default
+  is needed, write `value satisfies never;` and then `throw` or `return panic(...)`.
+- Avoid `as`: narrow with type guards, `in` checks, or records instead of arrays.
+  If a cast is truly unavoidable, ask before adding it and include a `// SAFETY:`
+  comment explaining why it is sound.
 - When a type mismatch appears, trace it to the source (e.g., the handler or query
   that produces the wrong type) rather than casting at the consumer. Check git to
   verify you did not introduce the mismatch yourself before blaming the framework.

@@ -18,9 +18,6 @@
 - Prefer explicit over implicit; when a backend endpoint accepts a discriminator
   (e.g., `?type=document|file`), thread it through the full stack (URL params,
   component props) instead of hardcoding a default on the frontend
-- If TypeScript can make a class of bug structurally impossible (branded types,
-  discriminated unions, exhaustive checks), prefer that over runtime validation or
-  manual discipline
 - Kill the bug class, not the instance: for a recurring or systemic defect, use the
   strongest applicable mechanism. Make invalid states unrepresentable first; cover
   remaining behavior with a property, invariant, idempotence, or fixed-point test over
@@ -46,9 +43,11 @@
   they defer, land the guard so the losing pattern can only shrink.
 - Avoid boolean fields for states that may grow. Use a named discriminator or
   domain type for values that answer "which kind/status/mode/type?" rather than
-  a permanent yes/no question; a two-value union, enum, or equivalent domain type
+  a permanent yes/no question; a two-value closed union (a sum-type enum only in
+  languages such as Rust) or equivalent domain type
   now is usually cheaper than migrating an `isX` flag later.
-- Conventional Commits: `feat:`, `chore:`, `fix:`, `docs:`
+- Conventional Commits, `type(scope): summary`: `feat`, `fix`, `refactor`, `perf`,
+  `test`, `docs`, `ci`, `chore`.
 - Keep feature branches rebased onto main so review sees a clean diff. How a
   branch lands (merge queue, squash) follows the repository's merge policy; main
   stays linear either way.
@@ -56,7 +55,13 @@
 true`, plus `rerere.autoupdate true` to auto-stage what it resolves; one-off:
   `git -c rerere.enabled=true -c rerere.autoupdate=true merge ...`) so conflict
   resolutions are recorded and auto-replayed across repeated or long rebases
-- Fail fast: validate at boundaries, return/throw early
+- Validate at boundaries and return early.
+- A failed read never comes back as an empty value (`[]`, `null`, `{}`): return a
+  typed outcome or let the failure propagate, so "nothing there" and "could not
+  read" stay distinguishable.
+- Every outbound request carries a timeout.
+- Modules that must be deterministic take the clock and randomness as inputs
+  instead of reading them ambiently.
 - Minimize brace nesting: invert conditions, early returns
 - Use named constants, not string literals for domain values
 - No direct `document.cookie` assignment

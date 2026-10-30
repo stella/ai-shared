@@ -13,8 +13,6 @@
 - Pass `from` to `useParams`, `useSearch`, and `Link`. In shared chrome that spans
   routes, pass `strict: false` to `useParams` or `useSearch`. This narrows the full
   route union, improving precision and type-check performance.
-- Let inference flow through `useLoaderData`, `useQuery`, and other inference-driven
-  hooks. Do not pass explicit type arguments that can mask a broken inference chain.
 - Query option file ordering: key type, key helpers, input type
   (`QueryOptionsInput`), option factory, then hook.
 - Query option factories that use `QueryOptionsInput` with a `TContext` must define a
