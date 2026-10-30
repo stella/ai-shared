@@ -6,10 +6,7 @@
 - In prose, vary punctuation: prefer colons, semicolons, commas, and parentheses
   over em dashes. This does not apply to source code, command syntax, generated
   content, or exact identifiers.
-- Omit needless words. Vigorous writing is concise: a sentence should contain no
-  unnecessary words, a paragraph no unnecessary sentences, for the same reason that a
-  drawing should have no unnecessary lines and a machine no unnecessary parts. Applies
-  to comments, commits, PRs, and docs.
+- Omit needless words in comments, commits, PRs, and docs.
 - Do not add backward-compatibility machinery by default. First identify the concrete
   older clients, persisted data, integrations, or deployment states that must remain
   supported. When none exist, prefer a clean migration or cutover; aliases, dual
@@ -55,17 +52,13 @@
 true`, plus `rerere.autoupdate true` to auto-stage what it resolves; one-off:
   `git -c rerere.enabled=true -c rerere.autoupdate=true merge ...`) so conflict
   resolutions are recorded and auto-replayed across repeated or long rebases
-- Validate at boundaries and return early.
 - A failed read never comes back as an empty value (`[]`, `null`, `{}`): return a
   typed outcome or let the failure propagate, so "nothing there" and "could not
   read" stay distinguishable.
 - Every outbound request carries a timeout.
 - Modules that must be deterministic take the clock and randomness as inputs
   instead of reading them ambiently.
-- Minimize brace nesting: invert conditions, early returns
 - Use named constants, not string literals for domain values
-- No direct `document.cookie` assignment
-- Avoid spread in loop accumulators (use `.push()`)
 - If you encounter a pre-existing bug or lint error, fix it. Preserve focus through
   isolation, not omission: use a separate commit when the fix is small and shares the
   same validation surface; use a separate focused PR when it expands the subsystem,
@@ -79,12 +72,9 @@ true`, plus `rerere.autoupdate true` to auto-stage what it resolves; one-off:
 
 ## Design Principles
 
-- No hidden complexity; code is the docs. Every operation must work for humans,
-  scripts, and AI agents alike.
+- Every operation must work for humans, scripts, and AI agents alike.
 - No lock-in: standard formats, self-hosting is first-class.
 - AI is a tool, not a persona. No anthropomorphizing.
-- Performance is non-negotiable. Batch operations, minimize round-trips, lazy-load
-  aggressively.
 - **Vertical slices over horizontal layers.** Features have one owning end-to-end
   slice (routes, components, handlers). Keep cross-slice changes minimal; change
   existing code when the end-to-end contract requires it.

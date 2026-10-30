@@ -2,7 +2,7 @@
 
 ### TypeScript
 
-- No enums: use `as const` objects or union types
+- No enums (`no-domain-enum`): use `as const` objects or union types.
 - Model mutually exclusive internal states as discriminated unions with a stable
   `type`, `status`, or domain-specific discriminator. Avoid boolean flag sets plus
   optional payload fields when only some combinations are valid.
@@ -24,16 +24,12 @@
 - Validate object literals against a large union type (route, link, query options) with
   `as const satisfies T`, not a `: T` annotation. `satisfies` checks the value without
   widening it or paying the annotation's instantiation cost.
-- Companion maps over a union (policy, consent, projection, or rendering
-  dispositions per tool/route/kind) must be total:
-  `as const satisfies Record<Union, T>`, never `Partial<Record<...>>`; `Partial` lets a new union
-  member land without a decision. Derive the union from the source of truth
-  (`keyof typeof SOURCE_MAP`, or a mapped filter over it) instead of
-  hand-listing names.
+- Companion maps over a union are total (`no-partial-record-satisfies`); derive the
+  union from the source of truth (`keyof typeof SOURCE_MAP`) instead of hand-listing
+  names.
 - Use `.at(0)` when the element may not exist (signals possible absence). Use `[0]`
   only when existence is already established (length check, or a `// SAFETY:` comment).
-- Skip barrel files (`index.ts`); import from explicit module paths.
-- Prefer arrow functions over function expressions
+- No barrel files (`oxc/no-barrel-file`); import from explicit module paths.
 - Destructure in the parameter when the intermediate variable is not reused
   (e.g., `{ body: { file, name } }` not `body` then `const { file, name } = body`)
 - Prefer discriminated union narrowing (`obj.type === "x"`) over `"key" in obj`
@@ -42,7 +38,7 @@
 - For function arguments, including helpers: use normal typed parameters for one
   argument, and also for two arguments when their types are different enough to stay
   readable. Use a named `SomethingOptions`, `SomethingArgs`, or `SomethingParams`
-  object for 3+ arguments, or when two same-type or otherwise interchangeable
+  object for 4+ arguments (`max-params`), or when two same-type or otherwise interchangeable
   positional arguments would be easy to mix up.
 - Reuse utility types from libraries instead of hand-rolling equivalents. Check the
   dependencies already in use before defining a custom helper type.
@@ -58,14 +54,6 @@
 
 ### Module Side Effects
 
-- **No module-level side effects in shared modules.** If a module exports both a
-  side-effecting singleton (DB connection, auth client, pool) and reusable utilities,
-  split them: put utilities in a separate file so consumers can import them without
-  triggering initialization. The side-effecting module re-exports for convenience.
-- **Never import test-only types in prod code.** If a prod generic needs to accept
-  both prod and test instances, use a structural constraint (`{ transaction: ... }`)
-  instead of importing a type from a test file.
-- **Defer eager initialization with lazy singletons.** When a module-level call
-  (`betterAuth()`, `drizzle()`) depends on another module's export, wrap it in a
-  `getX()` getter so it runs at first use, not at import time. This prevents TDZ
-  errors from non-deterministic module evaluation order.
+- Keep side-effecting singletons out of modules that also export utilities, and
+  create them lazily behind a `getX()` getter (`no-eager-singleton`). Prod code never
+  imports test-only types (`no-test-support-import`); use a structural constraint.

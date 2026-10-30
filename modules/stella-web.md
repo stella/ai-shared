@@ -4,8 +4,8 @@
   `/conventions-ux`.
 - Use coss (Base UI) components, registered as `@coss` in `components.json`. Prefer
   coss primitives over hand-rolled controls.
-- Use the shared `cn()` utility for conditional class names.
-- Use Zustand's `useShallow()` for selectors that return multiple state slices.
+- Compose class names with `cn()` (`require-cn-for-classname-composition`); Zustand
+  selectors returning several slices use `useShallow()` (`require-use-shallow`).
 - Use `useDebouncedCallback` from `use-debounce` instead of implementing debounce with
   `useRef<setTimeout>` and manual cleanup.
 - Call the API through the typed client in `apps/web/src/lib/api.ts`. The `api`
