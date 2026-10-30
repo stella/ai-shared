@@ -63,6 +63,21 @@ true`, plus `rerere.autoupdate true` to auto-stage what it resolves; one-off:
   isolation, not omission: use a separate commit when the fix is small and shares the
   same validation surface; use a separate focused PR when it expands the subsystem,
   risk, or review burden. Never leave a confirmed defect merely to keep a diff narrow.
+- Comments explain a non-obvious invariant, trade-off, safety constraint, or why
+  the code exists. Do not narrate the next statement, add empty documentation
+  blocks, or label closing braces.
+- Make abstractions earn their keep. Avoid pass-through wrappers, single-use
+  helpers, and interfaces with one implementation unless they establish a real
+  ownership boundary, contract, or test seam.
+- Prefer deleting concepts, branches, and layers over moving complexity around.
+  Keep feature-specific behavior at its canonical owner; do not scatter flags and
+  special cases through shared flows.
+- Defensive code belongs at real trust and failure boundaries. Do not add null
+  checks, silent fallbacks, or catch-and-log blocks for states already excluded by
+  types, validation, or framework guarantees.
+- No forward-compatibility placeholders: never ship a flag, option, field, or
+  export that is accepted but has no effect "for later". Add it in the PR that
+  wires it end to end.
 - Orchestrate across model tiers when your harness supports subagents and model
   selection: delegate well-scoped, mechanical, or independently verifiable subtasks
   (edits, searches, refactors, test runs) to a subagent on the cheapest model that
