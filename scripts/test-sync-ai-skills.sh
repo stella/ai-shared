@@ -69,9 +69,9 @@ for skill_root in .agents/skills .claude/skills; do
     exit 1
   fi
   grep -Fq '`failing_ci` > `needs_changes` > `pending_bots` > `clean`' "$rabbit_round_skill"
-  grep -Fq 'review-comment' "$rabbit_round_skill"
-  grep -Fq 'issue-comment' "$rabbit_round_skill"
-  grep -Fq 'surface, node ID, and content exactly match' "$rabbit_round_skill"
+  grep -Fq 'never posts GitHub comments, review-thread replies, or reviews' "$rabbit_round_skill"
+  grep -Fq '## 4. Record Dispositions in the PR Body' "$rabbit_round_skill"
+  grep -Fq 'Never post GitHub comments or review-thread' "$finish_pr_skill"
   grep -Fq 'make it stacked only when repository policy or the existing branch' "$finish_pr_skill"
   if grep -Fq 'Open one stacked follow-up PR' "$finish_pr_skill"; then
     echo "error: finish-pr requires an unconditional stacked follow-up" >&2
