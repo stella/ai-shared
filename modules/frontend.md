@@ -4,23 +4,19 @@
 
 - Use semantic design tokens (for example, `bg-muted`, `text-foreground`, and
   `border`) instead of raw colour values.
-- Prefer semantic HTML elements (`<button>`, `<nav>`, `<main>`) over generic elements
-  with ARIA roles. Provide meaningful alternative text, a proper heading hierarchy,
-  labels for form controls, and keyboard behavior alongside pointer behavior.
-- Reuse the project's established components and primitives with local styling
-  overrides instead of recreating native controls. This preserves accessibility,
-  focus behavior, and sizing conventions.
+- Use the design system's primitives instead of native controls; where none exists,
+  prefer semantic elements over ARIA roles.
+- Use a component's variants and sizes; add a variant instead of restyling it
+  through `className`. Spacing around the component stays the caller's.
 - When using statically scanned utility CSS, do not construct class names dynamically
   (for example, `` `bg-${token}-200` ``). Use an explicit class map or a style backed
   by CSS custom properties.
 
 ### UI Architecture
 
-- Prefer explicit branches over nested ternaries. Extract complex conditional UI into
-  a small helper or component that returns early.
+- No nested ternaries (`no-nested-ternary`); extract conditional UI into a small
+  component that returns early.
 - Subscribe to the smallest state slice a view needs. Broad subscriptions cause
   unrelated state changes to rerender the view.
-- Do not add memoization or caches prophylactically. Keep them when an API contract
-  requires stable identity or profiling proves a benefit.
 - Return minimal data from endpoints and mutations. Response types should contain only
   what callers consume; do not add fields speculatively for completeness.

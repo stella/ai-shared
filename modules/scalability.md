@@ -1,7 +1,7 @@
 ## Scalability
 
-Never paint yourself into a corner. Architecture must support Magic Circle scale
-without a rewrite. Never return unbounded result sets; keep the API stateless; filter
+Never paint yourself into a corner. Architecture must support large-firm data
+volumes without a rewrite. Never return unbounded result sets; keep the API stateless; filter
 by tenant ID in the query. Full guidelines in `/conventions-scale`.
 
 List endpoints should use cursor pagination and return the standard `Page<T>` envelope

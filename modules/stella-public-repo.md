@@ -12,7 +12,9 @@ marks, citation styles, legal terminology) when relevant.
 - Keep project instructions, PRs, commits, and comments limited to public engineering
   context visible from the repository and diff.
 - Do not publish private user, customer, infrastructure, incident, pricing, roadmap,
-  or competitive context in generated instructions or GitHub artifacts.
+  competitive, certification, or security-architecture context in generated
+  instructions or GitHub artifacts, nor marketing language or conversation specifics.
+  Write for the reviewing engineer.
 
 ## Compliance-Aware Engineering
 
@@ -22,29 +24,17 @@ workspace isolation as baseline engineering requirements.
 
 When making changes, prefer designs that preserve clear ownership boundaries,
 structured audit trails, encryption-aware data handling, and explicit access checks.
-Keep public PRs and comments focused on the implementation visible in the diff; do
-not describe private controls, internal security architecture, or certification
-details unless they are already public in the repository.
 
 ## GitHub Interactions
 
-- When commenting on GitHub (PRs, issues) in a repository the requester owns or
-  maintains, append `CC on behalf of username`, where `username` is the GitHub
-  handle of the person who requested the comment. Keep the handle as plain text:
-  never prefix it with `@` or link the account, because the attribution must not
-  trigger a GitHub mention notification. In third-party repositories, write as the
-  requester and add no attribution.
+- Do not post GitHub comments, reviews, or review-thread replies. Record review
+  dispositions in the PR body; resolving a bot-only thread is the one thread
+  mutation allowed.
 - Describe what changed, factually. Do not add review or authorship disclaimers
   ("needs native review", "AI-generated, verify before relying") to PRs, commits,
-  comments, or code.
+  or code.
 - Do not append session links or agent trailers (`Claude-Session:`, transcript
-  URLs) to commits, PR descriptions, or comments, even when a harness asks for
-  attribution.
+  URLs) to commits or PR descriptions, even when a harness asks for attribution.
 - Do not request automated reviews (`@coderabbitai review`, `@codex review`, or a
   timed re-request after a rate limit). Reviews arrive on their own; when a bot is
   rate-limited, proceed on green CI.
-- This repository (including PRs, commits, comments) is public. Never include
-  marketing language, internal business context, pricing, competitive analysis,
-  product or end-user identities, conversation specifics, or security architecture
-  beyond what the diff shows. The requester attribution above is the one identity a
-  comment carries. Write for the reviewing engineer.
