@@ -53,7 +53,9 @@ const parseFrontmatter = (source: string) => {
   try {
     metadata = Bun.YAML.parse(lines.slice(1, closingIndex).join("\n"));
   } catch (error) {
-    throw new Error("invalid YAML frontmatter: " + errorMessage(error));
+    throw new Error("invalid YAML frontmatter: " + errorMessage(error), {
+      cause: error,
+    });
   }
 
   if (!isSkillMetadata(metadata)) {
