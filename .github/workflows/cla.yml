@@ -26,7 +26,7 @@ jobs:
           || github.event.comment.body == 'I have read the CLA Document and I hereby sign the CLA'
         )
       )
-    uses: stella/.github/.github/workflows/cla.yml@042baebaf071329b956555c05caf5736504c278d
+    uses: stella/.github/.github/workflows/cla.yml@6a095097f5f9dc7e157ced38f978802d335baf08
     with:
       allowlist: dependabot[bot],renovate[bot],github-actions[bot],google-labs-jules[bot],cursoragent,stella-provenance-updater[bot]
     secrets:
